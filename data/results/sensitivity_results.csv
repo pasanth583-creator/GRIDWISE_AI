@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 sensitivity_category,parameter_variation,expected_cost_inr,var_95_inr,cvar_95_inr,day_ahead_energy_kwh,solve_time_sec
 Risk Aversion (Lambda),Lambda = 0.00,52227.39,60029.03,62173.94,2643.8,0.121
 Risk Aversion (Lambda),Lambda = 0.25,52234.9,60034.03,62123.85,2738.1,0.127
@@ -12,3 +13,19 @@ Battery Capacity,BESS 500 kWh,54838.36,62592.3,64798.5,2923.2,0.088
 Battery Capacity,BESS 1500 kWh,49649.4,57479.37,59561.89,2275.8,0.102
 Electricity Tariffs,Tariff +15%,60007.49,68968.47,71441.35,2647.6,0.089
 Electricity Tariffs,Tariff +30%,67786.84,77893.21,80699.98,2653.8,0.085
+=======
+sensitivity_category,parameter_variation,expected_cost_inr,var_95_inr,cvar_95_inr,day_ahead_energy_kwh,solve_time_sec
+Risk Aversion (Lambda),Lambda = 0.00,52227.39,60029.03,62173.94,2643.8,0.121
+Risk Aversion (Lambda),Lambda = 0.25,52234.9,60034.03,62123.85,2738.1,0.127
+Risk Aversion (Lambda),Lambda = 0.50,52266.94,60026.14,62078.13,2829.0,0.147
+Risk Aversion (Lambda),Lambda = 0.75,52360.56,60082.33,62038.23,3130.4,0.173
+Risk Aversion (Lambda),Lambda = 1.00,60265.68,60154.98,62000.03,3913.5,0.294
+Campus Demand,Demand -15%,35652.72,42710.65,44286.82,1713.6,0.112
+Campus Demand,Demand +15%,68995.89,77408.53,80083.92,3731.0,0.101
+Solar Generation,Solar -25% (Overcast),65831.24,73153.1,75313.86,3682.2,0.104
+Solar Generation,Solar +25% (Clear Sky),44715.19,52507.43,54082.52,2200.0,0.083
+Battery Capacity,BESS 500 kWh,54838.36,62592.3,64798.5,2923.2,0.088
+Battery Capacity,BESS 1500 kWh,49649.4,57479.37,59561.89,2275.8,0.102
+Electricity Tariffs,Tariff +15%,60007.49,68968.47,71441.35,2647.6,0.089
+Electricity Tariffs,Tariff +30%,67786.84,77893.21,80699.98,2653.8,0.085
+>>>>>>> origin/main

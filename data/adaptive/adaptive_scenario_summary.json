@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "summary_uuid": "SUMM-ADAPT-20261030133413",
   "generated_at": "2026-10-30T13:34:13.517841+00:00",
@@ -16,4 +17,24 @@
     "Overcast": 3,
     "Monsoon Rain": 3
   }
+=======
+{
+  "summary_uuid": "SUMM-ADAPT-20261030133413",
+  "generated_at": "2026-10-30T13:34:13.517841+00:00",
+  "num_scenarios": 25,
+  "hours_per_scenario": 24,
+  "total_records": 600,
+  "random_seed": 42,
+  "probability_sum": 1.0,
+  "mean_daily_solar_kwh": 3434.05,
+  "mean_daily_demand_kwh": 9795.41,
+  "mean_day_ahead_price_inr": 6.63,
+  "mean_real_time_price_inr": 6.814,
+  "weather_regimes_sampled": {
+    "Clear Sunny": 10,
+    "Scattered Clouds": 9,
+    "Overcast": 3,
+    "Monsoon Rain": 3
+  }
+>>>>>>> origin/main
 }

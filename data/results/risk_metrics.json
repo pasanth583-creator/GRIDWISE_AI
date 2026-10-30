@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "expected_cost_inr": 52227.39,
   "min_scenario_cost_inr": 40205.76,
@@ -9,4 +10,17 @@
   "cvar_95_cost_inr": 62173.94,
   "confidence_level_alpha": 0.95,
   "risk_parameter_lambda": 0.0
+=======
+{
+  "expected_cost_inr": 52227.39,
+  "min_scenario_cost_inr": 40205.76,
+  "max_scenario_cost_inr": 64174.06,
+  "std_scenario_cost_inr": 5468.29,
+  "median_scenario_cost_inr": 52632.06,
+  "percentile_90_cost_inr": 58608.86,
+  "var_95_cost_inr": 60029.03,
+  "cvar_95_cost_inr": 62173.94,
+  "confidence_level_alpha": 0.95,
+  "risk_parameter_lambda": 0.0
+>>>>>>> origin/main
 }

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "timestamp": "2026-10-30T19:57:16Z",
   "solver_engine": "SciPy HiGHS (Interior Point / Dual Simplex)",
@@ -9,4 +10,17 @@
   "grid_import_limit_kw": 1000.0,
   "is_synthetic_data": true,
   "provenance_notice": "SYNTHETIC SIMULATION DATA \u2013 NOT LIVE METER DATA"
+=======
+{
+  "timestamp": "2026-10-30T19:57:16Z",
+  "solver_engine": "SciPy HiGHS (Interior Point / Dual Simplex)",
+  "formulation": "Two-Stage Stochastic Linear Program with Rockafellar-Uryasev Mean-CVaR",
+  "decision_variables_count": 7275,
+  "num_scenarios": 50,
+  "battery_capacity_kwh": 1000.0,
+  "battery_efficiency_roundtrip": 0.8464,
+  "grid_import_limit_kw": 1000.0,
+  "is_synthetic_data": true,
+  "provenance_notice": "SYNTHETIC SIMULATION DATA \u2013 NOT LIVE METER DATA"
+>>>>>>> origin/main
 }

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "demand": {
     "selected_model": "Random Forest",
@@ -169,4 +170,177 @@
       "pinaw_width_pct": 26.64
     }
   }
+=======
+{
+  "demand": {
+    "selected_model": "Random Forest",
+    "validation_comparison": {
+      "Historical Baseline": {
+        "mae": 11.667,
+        "rmse": 14.498,
+        "mape_pct": 3.3,
+        "wape_pct": 2.91,
+        "r2_score": 0.9893
+      },
+      "Linear Regression (Ridge)": {
+        "mae": 11.837,
+        "rmse": 14.795,
+        "mape_pct": 3.37,
+        "wape_pct": 2.95,
+        "r2_score": 0.9888
+      },
+      "Random Forest": {
+        "mae": 11.501,
+        "rmse": 14.389,
+        "mape_pct": 3.22,
+        "wape_pct": 2.86,
+        "r2_score": 0.9894
+      },
+      "Gradient Boosting": {
+        "mae": 12.121,
+        "rmse": 15.339,
+        "mape_pct": 3.44,
+        "wape_pct": 3.02,
+        "r2_score": 0.988
+      }
+    },
+    "test_metrics": {
+      "mae": 13.527,
+      "rmse": 16.403,
+      "mape_pct": 3.8,
+      "wape_pct": 3.31,
+      "r2_score": 0.9865,
+      "picp_coverage_pct": 60.0,
+      "pinaw_width_pct": 7.65
+    }
+  },
+  "solar": {
+    "selected_model": "Gradient Boosting",
+    "validation_comparison": {
+      "Historical Baseline": {
+        "mae": 117.19,
+        "rmse": 208.016,
+        "mape_pct": 77.88,
+        "wape_pct": 69.16,
+        "r2_score": -0.1901
+      },
+      "Linear Regression (Ridge)": {
+        "mae": 12.564,
+        "rmse": 20.673,
+        "mape_pct": 66.66,
+        "wape_pct": 7.41,
+        "r2_score": 0.9882
+      },
+      "Random Forest": {
+        "mae": 10.34,
+        "rmse": 17.551,
+        "mape_pct": 16.17,
+        "wape_pct": 6.1,
+        "r2_score": 0.9915
+      },
+      "Gradient Boosting": {
+        "mae": 9.711,
+        "rmse": 16.364,
+        "mape_pct": 10.72,
+        "wape_pct": 5.73,
+        "r2_score": 0.9926
+      }
+    },
+    "test_metrics": {
+      "mae": 10.41,
+      "rmse": 16.817,
+      "mape_pct": 12.42,
+      "wape_pct": 5.72,
+      "r2_score": 0.9928,
+      "picp_coverage_pct": 80.0,
+      "pinaw_width_pct": 5.5
+    }
+  },
+  "day_ahead_price": {
+    "target": "day_ahead_price_inr_kwh",
+    "selected_model": "Historical Baseline",
+    "validation_comparison": {
+      "Historical Baseline": {
+        "mae": 0.156,
+        "rmse": 0.193,
+        "mape_pct": 2.48,
+        "wape_pct": 2.36,
+        "r2_score": 0.9838
+      },
+      "Linear Regression (Ridge)": {
+        "mae": 0.25,
+        "rmse": 0.319,
+        "mape_pct": 4.14,
+        "wape_pct": 3.79,
+        "r2_score": 0.9559
+      },
+      "Random Forest": {
+        "mae": 0.156,
+        "rmse": 0.193,
+        "mape_pct": 2.51,
+        "wape_pct": 2.37,
+        "r2_score": 0.9839
+      },
+      "Gradient Boosting": {
+        "mae": 0.16,
+        "rmse": 0.2,
+        "mape_pct": 2.56,
+        "wape_pct": 2.43,
+        "r2_score": 0.9827
+      }
+    },
+    "test_metrics": {
+      "mae": 0.17,
+      "rmse": 0.208,
+      "mape_pct": 2.61,
+      "wape_pct": 2.53,
+      "r2_score": 0.98,
+      "picp_coverage_pct": 66.67,
+      "pinaw_width_pct": 11.28
+    }
+  },
+  "real_time_price": {
+    "target": "real_time_price_inr_kwh",
+    "selected_model": "Historical Baseline",
+    "validation_comparison": {
+      "Historical Baseline": {
+        "mae": 0.61,
+        "rmse": 0.787,
+        "mape_pct": 10.37,
+        "wape_pct": 9.28,
+        "r2_score": 0.7794
+      },
+      "Linear Regression (Ridge)": {
+        "mae": 0.709,
+        "rmse": 0.905,
+        "mape_pct": 12.02,
+        "wape_pct": 10.78,
+        "r2_score": 0.7081
+      },
+      "Random Forest": {
+        "mae": 0.619,
+        "rmse": 0.79,
+        "mape_pct": 10.32,
+        "wape_pct": 9.42,
+        "r2_score": 0.7774
+      },
+      "Gradient Boosting": {
+        "mae": 0.647,
+        "rmse": 0.845,
+        "mape_pct": 10.82,
+        "wape_pct": 9.85,
+        "r2_score": 0.7456
+      }
+    },
+    "test_metrics": {
+      "mae": 0.649,
+      "rmse": 0.841,
+      "mape_pct": 10.32,
+      "wape_pct": 9.63,
+      "r2_score": 0.7482,
+      "picp_coverage_pct": 72.0,
+      "pinaw_width_pct": 26.64
+    }
+  }
+>>>>>>> origin/main
 }

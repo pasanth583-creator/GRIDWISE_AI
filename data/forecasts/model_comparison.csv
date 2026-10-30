@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 target,model,is_selected,mae,rmse,mape_pct,wape_pct,r2_score
 demand,Historical Baseline,False,11.667,14.498,3.3,2.91,0.9893
 demand,Linear Regression (Ridge),False,11.837,14.795,3.37,2.95,0.9888
@@ -11,3 +12,18 @@ real_time_price,Historical Baseline,True,0.61,0.787,10.37,9.28,0.7794
 real_time_price,Linear Regression (Ridge),False,0.709,0.905,12.02,10.78,0.7081
 real_time_price,Random Forest,False,0.619,0.79,10.32,9.42,0.7774
 real_time_price,Gradient Boosting,False,0.647,0.845,10.82,9.85,0.7456
+=======
+target,model,is_selected,mae,rmse,mape_pct,wape_pct,r2_score
+demand,Historical Baseline,False,11.667,14.498,3.3,2.91,0.9893
+demand,Linear Regression (Ridge),False,11.837,14.795,3.37,2.95,0.9888
+demand,Random Forest,True,11.501,14.389,3.22,2.86,0.9894
+demand,Gradient Boosting,False,12.121,15.339,3.44,3.02,0.988
+solar,Historical Baseline,False,117.19,208.016,77.88,69.16,-0.1901
+solar,Linear Regression (Ridge),False,12.564,20.673,66.66,7.41,0.9882
+solar,Random Forest,False,10.34,17.551,16.17,6.1,0.9915
+solar,Gradient Boosting,True,9.711,16.364,10.72,5.73,0.9926
+real_time_price,Historical Baseline,True,0.61,0.787,10.37,9.28,0.7794
+real_time_price,Linear Regression (Ridge),False,0.709,0.905,12.02,10.78,0.7081
+real_time_price,Random Forest,False,0.619,0.79,10.32,9.42,0.7774
+real_time_price,Gradient Boosting,False,0.647,0.845,10.82,9.85,0.7456
+>>>>>>> origin/main

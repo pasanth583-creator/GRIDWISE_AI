@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "status": "OPTIMAL",
   "solver": "SciPy HiGHS (Interior Point)",
@@ -27,4 +28,35 @@
   "vss_savings_pct": 0.52,
   "evpi_inr": 597.81,
   "deterministic_baseline_eev_inr": 52498.73
+=======
+{
+  "status": "OPTIMAL",
+  "solver": "SciPy HiGHS (Interior Point)",
+  "solve_time_seconds": 0.1228,
+  "risk_parameter_lambda": 0.0,
+  "num_scenarios_evaluated": 50,
+  "expected_total_cost_inr": 52227.39,
+  "day_ahead_energy_kwh": 2643.8,
+  "expected_real_time_energy_kwh": 4606.6,
+  "battery_daily_cycles": 0.82,
+  "battery_throughput_kwh": 818.7,
+  "peak_grid_import_kw": 513.0,
+  "max_equality_residual": 5.684341886080802e-14,
+  "max_inequality_violation": 0.0,
+  "simultaneous_charging_kw": 0.0,
+  "risk_metrics": {
+    "expected_cost_inr": 52227.39,
+    "min_scenario_cost_inr": 40205.76,
+    "max_scenario_cost_inr": 64174.06,
+    "std_scenario_cost_inr": 5468.29,
+    "median_scenario_cost_inr": 52632.06,
+    "percentile_90_cost_inr": 58608.86,
+    "var_95_cost_inr": 60029.03,
+    "cvar_95_cost_inr": 62173.94
+  },
+  "vss_inr": 271.34,
+  "vss_savings_pct": 0.52,
+  "evpi_inr": 597.81,
+  "deterministic_baseline_eev_inr": 52498.73
+>>>>>>> origin/main
 }

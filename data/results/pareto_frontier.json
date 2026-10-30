@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "set_uuid": "PARETO-SET-603DA2D4",
   "total_solutions": 8,
@@ -148,4 +149,156 @@
       "is_pareto_optimal": true
     }
   ]
+=======
+{
+  "set_uuid": "PARETO-SET-603DA2D4",
+  "total_solutions": 8,
+  "pareto_optimal_count": 8,
+  "solutions": [
+    {
+      "name": "Cost Minimizer (Phase 4)",
+      "weights": {
+        "cost": 1.0,
+        "cvar": 0.0,
+        "solar": 0.0,
+        "grid": 0.0,
+        "battery": 0.0
+      },
+      "is_cost_only": true,
+      "expected_cost_inr": 48432.09,
+      "cvar_95_inr": 58425.49,
+      "solar_utilization_pct": 96.54,
+      "grid_dependency_pct": 67.53,
+      "battery_throughput_kwh": 739.21,
+      "degradation_cost_inr": 258.72,
+      "is_pareto_optimal": true
+    },
+    {
+      "name": "Conservative Risk Hedged",
+      "weights": {
+        "cost": 0.3,
+        "cvar": 0.7,
+        "solar": 0.0,
+        "grid": 0.0,
+        "battery": 0.0
+      },
+      "is_cost_only": false,
+      "expected_cost_inr": 48729.89,
+      "cvar_95_inr": 57958.46,
+      "solar_utilization_pct": 95.7,
+      "grid_dependency_pct": 67.84,
+      "battery_throughput_kwh": 748.69,
+      "degradation_cost_inr": 262.04,
+      "is_pareto_optimal": true
+    },
+    {
+      "name": "Green Solar Self-Sufficiency",
+      "weights": {
+        "cost": 0.3,
+        "cvar": 0.1,
+        "solar": 0.4,
+        "grid": 0.2,
+        "battery": 0.0
+      },
+      "is_cost_only": false,
+      "expected_cost_inr": 48433.89,
+      "cvar_95_inr": 58390.93,
+      "solar_utilization_pct": 96.54,
+      "grid_dependency_pct": 67.53,
+      "battery_throughput_kwh": 740.82,
+      "degradation_cost_inr": 259.29,
+      "is_pareto_optimal": true
+    },
+    {
+      "name": "Grid Independence Focus",
+      "weights": {
+        "cost": 0.2,
+        "cvar": 0.1,
+        "solar": 0.2,
+        "grid": 0.5,
+        "battery": 0.0
+      },
+      "is_cost_only": false,
+      "expected_cost_inr": 48433.89,
+      "cvar_95_inr": 58390.93,
+      "solar_utilization_pct": 96.54,
+      "grid_dependency_pct": 67.53,
+      "battery_throughput_kwh": 740.82,
+      "degradation_cost_inr": 259.29,
+      "is_pareto_optimal": true
+    },
+    {
+      "name": "Battery Asset Conservation",
+      "weights": {
+        "cost": 0.3,
+        "cvar": 0.1,
+        "solar": 0.1,
+        "grid": 0.1,
+        "battery": 0.4
+      },
+      "is_cost_only": false,
+      "expected_cost_inr": 49108.36,
+      "cvar_95_inr": 59079.16,
+      "solar_utilization_pct": 96.54,
+      "grid_dependency_pct": 67.52,
+      "battery_throughput_kwh": 737.07,
+      "degradation_cost_inr": 257.98,
+      "is_pareto_optimal": true
+    },
+    {
+      "name": "Balanced Tri-Objective",
+      "weights": {
+        "cost": 0.5,
+        "cvar": 0.3,
+        "solar": 0.1,
+        "grid": 0.1,
+        "battery": 0.0
+      },
+      "is_cost_only": false,
+      "expected_cost_inr": 48478.27,
+      "cvar_95_inr": 58138.07,
+      "solar_utilization_pct": 96.54,
+      "grid_dependency_pct": 67.53,
+      "battery_throughput_kwh": 742.02,
+      "degradation_cost_inr": 259.71,
+      "is_pareto_optimal": true
+    },
+    {
+      "name": "Eco-Risk Compromise",
+      "weights": {
+        "cost": 0.35,
+        "cvar": 0.3,
+        "solar": 0.25,
+        "grid": 0.05,
+        "battery": 0.05
+      },
+      "is_cost_only": false,
+      "expected_cost_inr": 48562.26,
+      "cvar_95_inr": 58222.22,
+      "solar_utilization_pct": 96.54,
+      "grid_dependency_pct": 67.53,
+      "battery_throughput_kwh": 740.61,
+      "degradation_cost_inr": 259.22,
+      "is_pareto_optimal": true
+    },
+    {
+      "name": "Comprehensive Multi-Objective",
+      "weights": {
+        "cost": 0.25,
+        "cvar": 0.25,
+        "solar": 0.2,
+        "grid": 0.15,
+        "battery": 0.15
+      },
+      "is_cost_only": false,
+      "expected_cost_inr": 48723.2,
+      "cvar_95_inr": 58405.37,
+      "solar_utilization_pct": 96.54,
+      "grid_dependency_pct": 67.53,
+      "battery_throughput_kwh": 739.65,
+      "degradation_cost_inr": 258.88,
+      "is_pareto_optimal": true
+    }
+  ]
+>>>>>>> origin/main
 }
