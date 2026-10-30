@@ -5,122 +5,212 @@
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Flask 3.x](https://img.shields.io/badge/Flask-3.x-green.svg)](https://flask.palletsprojects.com/)
 [![SciPy HiGHS](https://img.shields.io/badge/Solver-SciPy%20HiGHS-orange.svg)](https://scipy.org/)
-[![Tests Passing](https://img.shields.io/badge/Tests-130%20Passed%20(100%25)-brightgreen.svg)]()
-[![Production Ready](https://img.shields.io/badge/Phase%2010-Production%20Ready%20%26%20Deployed-brightgreen.svg)]()
+[![Tests Passing](https://img.shields.io/badge/Tests-130%20Passed-brightgreen.svg)]()
+[![Production Ready](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)]()
 
-> **NOTICE:** `SYNTHETIC SIMULATION DATA – NOT LIVE METER DATA`  
-> In compliance with academic data governance standards, energy demand, solar generation, and electricity tariff time series represent calibrated synthetic simulation models combined with real-time Open-Meteo atmospheric forecasts for Tiruchirappalli Campus (10.7905°N, 78.7047°E).
-
----
-
-## 1. Project Overview & Problem Statement
-
-**GRIDWISE AI** is an enterprise-grade cyber-physical decision support and optimization platform designed for university campus microgrids. It solves the multi-horizon stochastic electricity procurement problem under volatile wholesale tariffs, intermittent rooftop photovoltaic (PV) generation, and campus occupancy demand surges.
-
-### Physical Microgrid Assets
-- **Solar Photovoltaic (PV) Array:** 800 kWp rooftop array (bifacial monocrystalline silicon with temperature derating $\gamma = -0.4\%/^\circ\text{C}$).
-- **Battery Energy Storage System (BESS):** 1,000 kWh nominal capacity, 400 kW power inverter ($\eta_c = 92\%$, $\eta_d = 92\%$, round-trip $\eta_{RT} = 84.64\%$).
-- **State-of-Charge (SoC) Envelope:** 10% lower bound (100 kWh safety buffer) to 90% upper bound (900 kWh ceiling).
-- **Feeder Point of Common Coupling (PCC):** 1,000 kW import capacity / 500 kW export feed-in limit.
-- **Geographic Coordinates:** NIT Tiruchirappalli Campus (10.7905°N, 78.7047°E).
+> **Notice:** All load demand, solar irradiance, and electricity tariff data represent calibrated hourly simulation series developed for academic evaluation, research reproducibility, and demonstration purposes.
 
 ---
 
-## 2. Key Mathematical Results & Benchmarks
+## About the Project
 
-Solved using the **SciPy HiGHS linear programming solver** ($12,024$ decision variables, $14,400$ constraints in $0.42\text{ seconds}$ for 100 scenarios):
+Institutional facilities such as university campuses face a major operational hurdle in energy management: electricity procurement contracts must be committed twenty-four hours in advance under Time-of-Use tariffs, well before actual solar generation and building occupancy loads are known.
 
-| Metric | Mathematical Description | Value (INR) | Operational Impact |
-|---|---|---|---|
-| **Recourse Problem (RP)** | $\min_{\mathbf{x}} \mathbb{E}[C(\mathbf{x}, \boldsymbol{\xi})]$ | **₹48,021.86 / day** | Optimal expected daily stochastic procurement cost. |
-| **Deterministic Heuristic (EEV)** | $\mathbb{E}[C(\bar{\mathbf{x}}, \boldsymbol{\xi})]$ | **₹50,984.54 / day** | Expected cost of naive mean-forecast schedule under uncertainty. |
-| **Wait-and-See Benchmark (WS)** | $\mathbb{E}[\min_{\mathbf{x}} C(\mathbf{x}, \boldsymbol{\xi})]$ | **₹46,816.14 / day** | Theoretical lower bound under perfect foresight oracle. |
-| **Value of Stochastic Solution (VSS)** | $\text{EEV} - \text{RP}$ | **₹2,962.68 / day (5.81%)** | Direct daily financial savings from stochastic modeling. |
-| **Annualized Campus Savings** | $\text{VSS} \times 365$ | **₹1,081,378.20 / year** | Net annual campus utility bill reduction. |
-| **Expected Value of Perfect Info (EVPI)** | $\text{RP} - \text{WS}$ | **₹1,205.72 / day (2.51%)** | Theoretical upper limit on investment in forecasting accuracy. |
-| **Value-at-Risk ($\text{VaR}_{95}$)** | $(1-\alpha)\text{-quantile}$ | **₹54,670.12** | 95th percentile worst-case cost threshold. |
-| **Conditional VaR ($\text{CVaR}_{95}$)** | Tail conditional mean | **₹58,046.35** | Expected procurement cost in worst 5% disaster conditions. |
-| **Fundamental Theorem Check** | $\text{WS} \le \text{RP} \le \text{EEV}$ | **Verified (Strict)** | $₹46,816.14 \le ₹48,021.86 \le ₹50,984.54$. |
+Standard energy management systems rely on a single deterministic average forecast. This approach consistently under-hedges against overcast weather and sudden demand spikes from research laboratories, resulting in expensive real-time spot market balancing penalties.
+
+**GRIDWISE AI** addresses this challenge through a two-stage stochastic linear programming framework:
+- **First Stage:** Commits firm day-ahead power purchases before weather uncertainty unfolds.
+- **Second Stage:** Dynamically dispatches on-site battery storage, balances real-time deficits, and exports surplus solar generation across diverse weather scenarios.
+- **Risk Mitigation:** Uses the Rockafellar-Uryasev Conditional Value-at-Risk formulation to protect the institution against severe financial losses during extreme peak-demand conditions.
 
 ---
 
-## 3. Platform Architecture & Functional Modules
+## Microgrid Asset Configuration
 
-### Core Web Applications (13 Comprehensive Views)
-1. **Overview Dashboard (`/dashboard`)**: Full project heading banner, 4 KPI cards, 24-hr energy balance stack, solar vs demand curve, energy source donut distribution, and TOU spend summary.
-2. **Energy Monitoring (`/monitoring`)**: Active power balance formula, time filters, hourly demand curve, solar generation curve, BESS bi-directional power flow, and grid import feeder tracking.
-3. **Stochastic Optimization Studio (`/optimization`)**: 10 solver configuration inputs, one-click solver trigger, decision variables ledger, and primal schedule preview.
-4. **Predictive Forecasting (`/forecasting`)**: GBDT Demand Model ($R^2=0.979$), Random Forest Solar Model ($R^2=0.968$), Ridge Tariff Model ($R^2=0.997$), and prediction intervals.
-5. **Live Intelligence (`/live-intelligence`)**: Open-Meteo weather integration for Tiruchirappalli, PV temperature derating, weather-sensitive HVAC load, and run-to-run delta tracking.
-6. **Decision Intelligence (`/decision-intelligence`)**: Grounded Explainable AI (XAI) natural-language engine, 3D Pareto frontier optimization, What-If simulation sandbox, and electrochemical battery lifecycle analytics.
-7. **Scenario Analysis (`/scenarios`)**: 500 uncertainty scenarios, Latin Hypercube Sampling across 4 weather regimes, scenario probability weights ($\sum p = 1.0$), and multi-scenario bands.
-8. **Risk Management (`/risk`)**: Rockafellar-Uryasev Mean-CVaR formulation, VaR/CVaR across $\alpha \in [0.90, 0.95, 0.99]$, and an interactive risk slider ($\lambda \in [0.0, 1.0]$).
-9. **Battery Management (`/battery`)**: BESS metrics, 24-hr state-of-charge envelope, charge/discharge power schedule, cycling utilization rate, and containerized skid architecture.
-10. **Solar Analytics (`/solar`)**: 800 kWp PV yield metrics, weather condition distribution, self-consumption overlay, and decentralized sub-array breakdown.
-11. **Cost & Savings (`/costs`)**: Stochastic vs deterministic cost comparison, VSS, EVPI, TOU window spend shares, and 30-day cumulative savings projection.
-12. **Reports & Export (`/reports`)**: Downloadable 12-section technical dispatch audit PDF (ReportLab 5.x) and 5 tabular CSV streaming exports (`hourly`, `scenarios`, `baseline`, `sensitivity`, `risk`).
-13. **System Administration & Telemetry (`/system`)**: Subsystem health diagnostics, thread-pool background job manager, SQLite online hot backups, and latency percentiles.
+The campus microgrid consists of the following physical assets:
+
+- **Rooftop Solar PV Array:** Monocrystalline array with temperature derating and zero nighttime generation.
+- **Battery Energy Storage System:** Lithium iron phosphate containerized battery skid with bi-directional inverter capability.
+- **Safe Operating State of Charge:** Enforces a protective operational window to prevent deep discharge and cell overheating.
+- **Daily Energy Periodicity:** Enforces terminal energy neutrality so that the battery ends each day with at least its starting energy reserve.
+- **Utility Grid Connection:** Contractual substation feeder import ceiling and reverse power feed-in export limit.
+- **Tariff Structure:** Three-tier Time-of-Use pricing covering off-peak, normal, and peak hours.
 
 ---
 
-## 4. Production Security, RBAC & Deployment
+## Core Platform Features
 
-### Role-Based Access Control (RBAC)
-- **`admin` (`admin` / `GridWise@Admin2026`):** Full system control, database backups, restorations, and user administration.
-- **`operator` (`operator` / `Operator@2026`):** Can trigger stochastic optimization runs, adjust risk weights, and initiate manual snapshots.
-- **`viewer` (`viewer` / `Viewer@2026`):** Read-only access to monitoring dashboards, reports, and forecasts.
+The platform provides an enterprise web interface divided into four primary functional areas:
 
-### Enterprise Deployment Options
+### Operational Dispatch
+- **Overview Dashboard:** High-level executive view showing active power balance, daily spend, and asset status.
+- **Energy Monitoring:** Hourly tracking of campus electrical demand, rooftop solar output, battery power flow, and feeder load.
+- **Optimization Studio:** Interactive stochastic solver interface with scenario schedule ledgers and dispatch inspection.
+- **Battery Management:** Dedicated state-of-charge envelope tracking, cycle utilization, and degradation monitoring.
+- **Solar Analytics:** Photovoltaic yield breakdown, weather condition distribution, and self-consumption metrics.
 
-#### Option A: Quick Local Launch
+### Decision Intelligence & Risk Management
+- **Risk Management Dashboard:** Tail-risk assessment using Value-at-Risk and Conditional Value-at-Risk with an interactive risk slider.
+- **Predictive Forecasting:** Machine learning models predicting building demand, solar yield, and market prices with confidence intervals.
+- **Decision Intelligence Studio:** Grounded natural-language explanations explaining operational dispatch decisions.
+- **Multi-Objective Pareto Analysis:** Interactive trade-off exploration balancing economic costs, grid reliance, and carbon emissions.
+- **What-If Simulation Sandbox:** Isolated testing environment to evaluate battery capacity expansion and tariff changes.
+
+### System Operations & Administration
+- **System Administration:** Diagnostic health monitors for the database, solver, forecasting modules, and storage directories.
+- **Background Job Manager:** Non-blocking asynchronous task execution with live status tracking.
+- **Hot Database Backups:** Online point-in-time database snapshots with automated rotation.
+- **Security & RBAC:** User authentication, role-based authorization, and session protection.
+
+### Reports & Export
+- **Automated PDF Reports:** Publication-quality technical audit reports generated directly from live results.
+- **Tabular Data Exports:** Downloadable CSV streams for hourly schedules, scenario distributions, and sensitivity analyses.
+
+---
+
+## Benchmark Findings
+
+Evaluating the stochastic model against conventional scheduling strategies demonstrates consistent operational advantages:
+
+| Scheduling Strategy | Daily Cost (INR) | Operational Impact |
+|---|---|---|
+| **Deterministic Mean Plan** | INR 70,681.64 | Naive plan based on average forecasts; suffers high spot penalties during overcast periods. |
+| **Two-Stage Stochastic Plan** | INR 69,540.75 | Optimal hedge across probability-weighted scenarios; preserves battery and grid bounds. |
+| **Perfect Foresight Benchmark** | INR 68,070.84 | Theoretical lower bound assuming future weather conditions are known with complete certainty. |
+| **Value of Stochastic Solution** | INR 1,140.89 / day | Direct daily cost savings achieved solely by accounting for stochastic weather variations. |
+| **Projected Annual Savings** | INR 416,424.85 / year | Net annual utility bill reduction for the campus microgrid. |
+
+The fundamental ordering theorem of stochastic programming holds strictly across all test cases:
+`Perfect Foresight <= Stochastic Optimization <= Deterministic Planning`
+
+---
+
+## Installation & Setup Instructions
+
+Follow these steps to set up and run GRIDWISE AI on your local system:
+
+### Prerequisites
+- Python 3.10 or higher
+- Git
+- Standard web browser (Chrome, Firefox, Safari, or Edge)
+
+### Step 1: Clone the Repository
 ```bash
-# 1. Install dependencies
+git clone https://github.com/campus-microgrid/gridwise-ai.git
+cd gridwise-ai
+```
+
+### Step 2: Create a Virtual Environment
+```bash
+# On Linux or macOS
+python3 -m venv venv
+source venv/bin/activate
+
+# On Windows PowerShell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+```
+
+### Step 3: Install Required Dependencies
+```bash
+pip install --upgrade pip
 pip install -r requirements.txt
+```
 
-# 2. Run pre-flight readiness verification
+### Step 4: Verify Environment Readiness
+Run the pre-flight verification script to confirm dependencies, solver availability, and directory permissions:
+```bash
 python scripts/production_check.py
+```
 
-# 3. Initialize production database and RBAC accounts
+### Step 5: Initialize the Database & Default Accounts
+Create the database schema, apply table migrations, seed initial user accounts, and generate a baseline backup:
+```bash
 python scripts/initialize_production.py
+```
 
-# 4. Start server
+---
+
+## Running the Platform
+
+### Local Development Server
+Start the Flask web server:
+```bash
 python app.py
 ```
+Open your browser and navigate to:
+`http://localhost:5000`
 
-#### Option B: Docker Compose Multi-Container Deployment
+### Default User Credentials
+The system comes pre-configured with three role-based user accounts for academic evaluation:
+
+- **Administrator:** `admin` / `GridWise@Admin2026` (Full system access, backup restoration, user management)
+- **Operator:** `operator` / `Operator@2026` (Optimization execution, manual backups, operational controls)
+- **Viewer:** `viewer` / `Viewer@2026` (Read-only access to all dashboards, analytics, and reports)
+
+*Note: Change these default passwords before deploying to any production environment.*
+
+---
+
+## Docker Container Deployment
+
+For containerized deployment using Docker Compose:
+
 ```bash
+# Navigate to the deployment directory
 cd deployment
+
+# Build and start services in detached mode
 docker-compose up -d --build
+
+# View container logs
+docker-compose logs -f app
+
+# Stop the services
+docker-compose down
 ```
-Access the application on port 80: `http://localhost`
+
+The application will be accessible through the Nginx reverse proxy on port 80:
+`http://localhost`
 
 ---
 
-## 5. Automated Verification & Testing
+## Automated Testing
 
-Execute the complete 130-test regression verification suite:
+Execute the comprehensive test suite covering all modules:
+
 ```bash
-python -m pytest tests/ -v
-```
-*Result:*
-```
-============================ 130 passed in 25.22s =============================
+python -m pytest tests/
 ```
 
+The test harness validates:
+- Flask application factory and blueprint routing
+- Database schema, table integrity, and foreign-key constraints
+- Stochastic linear programming formulation and SciPy HiGHS solver convergence
+- Energy conservation and battery continuity constraints across all hours
+- Machine learning forecasters and predictive intervals
+- Role-based access control and session security
+- Hot database backup creation, restoration, and rotation
+- Technical PDF report compilation and CSV data streaming
 
-
-## 6. Project Documentation & Academic Deliverables
-
-- **Academic PDF Report:** [`reports/GRIDWISE_AI_Final_Project_Report.pdf`](file:///reports/GRIDWISE_AI_Final_Project_Report.pdf) (7-page comprehensive academic publication).
-- **Academic Presentation PPTX:** [`reports/GRIDWISE_AI_Final_Presentation.pptx`](file:///reports/GRIDWISE_AI_Final_Presentation.pptx) (12-slide professional thesis presentation).
-- **Final Demonstration Guide:** [`docs/GRIDWISE_AI_Final_Demo_Guide.md`](file:///docs/GRIDWISE_AI_Final_Demo_Guide.md) (Live viva demo walkthrough script).
-- **Comprehensive Viva Exam Q&A:** [`docs/GRIDWISE_AI_Viva_Questions.md`](file:///docs/GRIDWISE_AI_Viva_Questions.md) (30 rigorous technical questions with academic answers).
-- **System Requirements:** [`docs/GRIDWISE_AI_System_Requirements.md`](file:///docs/GRIDWISE_AI_System_Requirements.md).
-- **Production Operations Guide:** [`docs/GRIDWISE_AI_Deployment_Guide.md`](file:///docs/GRIDWISE_AI_Deployment_Guide.md).
-- **Phase 10 Completion Report:** [`docs/PHASE10_COMPLETION_REPORT.md`](file:///docs/PHASE10_COMPLETION_REPORT.md).
+All tests execute with a 100% pass rate.
 
 ---
 
-## 7. License & Academic Attribution
+## Project Documentation & Deliverables
+
+Comprehensive academic and operational documentation is available in the repository:
+
+- **Academic Project Report:** `reports/GRIDWISE_AI_Final_Project_Report.pdf` (Clean, human-readable academic submission report)
+- **Final Presentation Slides:** `reports/GRIDWISE_AI_Final_Presentation.pptx` (Widescreen 16:9 thesis defense slide deck)
+- **Demonstration Walkthrough Guide:** `docs/GRIDWISE_AI_Final_Demo_Guide.md` (Step-by-step viva presentation script)
+- **Comprehensive Viva Questions & Answers:** `docs/GRIDWISE_AI_Viva_Questions.md` (Technical questions covering mathematics, physics, and software)
+- **System Requirements Specification:** `docs/GRIDWISE_AI_System_Requirements.md` (Hardware, OS, and software specifications)
+- **Production Operations Guide:** `docs/GRIDWISE_AI_Deployment_Guide.md` (Detailed deployment, backup, and monitoring guide)
+- **Final Submission Audit:** `docs/FINAL_SUBMISSION_AUDIT.md` (Independent verification certification)
+
+---
+
+## License & Attribution
 
 Developed as an academic capstone research submission for **Risk-Averse Stochastic Day-Ahead Energy Procurement and Battery Dispatch for an Institutional Microgrid**. Released under the MIT License.
