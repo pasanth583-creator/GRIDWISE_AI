@@ -1,0 +1,27 @@
+# GRIDWISE AI - Dependencies
+# Stochastic Optimization of Day-Ahead Energy Procurement for a Campus Solar + Battery Microgrid
+
+Flask>=3.0.0,<4.0.0
+Werkzeug>=3.0.0,<4.0.0
+python-dotenv>=1.0.0
+
+# Scientific Computing, Machine Learning & Optimization
+numpy>=1.26.0
+pandas>=2.0.0
+scipy>=1.11.0
+scikit-learn>=1.3.0
+
+# External APIs & Networking
+requests>=2.31.0
+
+# Data Visualization & Reporting
+plotly>=5.18.0
+reportlab>=4.0.0
+python-pptx>=1.0.0
+
+# Production WSGI Server (Linux/Container)
+gunicorn>=21.2.0
+
+# Development & Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
