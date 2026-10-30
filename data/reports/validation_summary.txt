@@ -1,0 +1,41 @@
+====================================================
+GRIDWISE AI - PHASE 3 DATASET VALIDATION REPORT
+====================================================
+Generated: 2026-10-30T15:53:52.540946
+Overall Status: VALIDATED_SUCCESSFULLY
+
+[DEMAND] Status: PASSED
+  - record_count_is_8760: ✔ PASS
+  - no_missing_timestamps: ✔ PASS
+  - no_duplicate_timestamps: ✔ PASS
+  - no_negative_demand: ✔ PASS
+  Statistics: {'min_demand_kwh': 120.0, 'max_demand_kwh': 1115.32, 'mean_demand_kwh': 483.2807374429224, 'total_annual_demand_mwh': 4233.53926}
+
+[SOLAR] Status: PASSED
+  - record_count_is_8760: ✔ PASS
+  - no_missing_timestamps: ✔ PASS
+  - no_duplicate_timestamps: ✔ PASS
+  - no_negative_solar: ✔ PASS
+  - solar_zero_at_night: ✔ PASS
+  - solar_within_capacity: ✔ PASS
+  Statistics: {'max_solar_output_kwh': 628.04, 'mean_daylight_solar_kwh': 252.68274815595367, 'total_annual_generation_mwh': 1198.97964, 'capacity_factor_pct': 17.108727739726028}
+
+[PRICES] Status: PASSED
+  - record_count_is_8760: ✔ PASS
+  - no_missing_timestamps: ✔ PASS
+  - no_duplicate_timestamps: ✔ PASS
+  - day_ahead_prices_positive: ✔ PASS
+  - real_time_prices_positive: ✔ PASS
+  Statistics: {'mean_day_ahead_inr_kwh': 7.4750000000000005, 'min_day_ahead_inr_kwh': 3.864, 'max_day_ahead_inr_kwh': 12.744, 'mean_real_time_inr_kwh': 7.633417465753424, 'max_real_time_inr_kwh': 18.637}
+
+[SCENARIOS] Status: PASSED
+  - exactly_500_weather_scenarios: ✔ PASS
+  - weather_probabilities_sum_to_one: ✔ PASS
+  - combined_records_are_12000: ✔ PASS
+  - each_scenario_has_24_hours: ✔ PASS
+  - distinct_scenario_probabilities_sum_to_one: ✔ PASS
+  - no_missing_scenario_values: ✔ PASS
+  - scenario_demand_non_negative: ✔ PASS
+  - scenario_solar_non_negative: ✔ PASS
+  Statistics: {'total_scenarios': 500, 'total_records': 12000, 'mean_scenario_demand_kwh': 557.0612725, 'mean_scenario_solar_kwh': 184.31468, 'weather_distribution': {'Sunny': 175, 'Partly Cloudy': 150, 'Cloudy': 100, 'Rainy': 75}}
+

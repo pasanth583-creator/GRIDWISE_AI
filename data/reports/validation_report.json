@@ -1,0 +1,89 @@
+{
+  "timestamp": "2026-10-30T15:53:52.540946",
+  "status": "VALIDATED_SUCCESSFULLY",
+  "overall_passed": true,
+  "datasets": {
+    "demand": {
+      "dataset": "campus_demand",
+      "passed": true,
+      "checks": {
+        "record_count_is_8760": true,
+        "no_missing_timestamps": true,
+        "no_duplicate_timestamps": true,
+        "no_negative_demand": true
+      },
+      "statistics": {
+        "min_demand_kwh": 120.0,
+        "max_demand_kwh": 1115.32,
+        "mean_demand_kwh": 483.2807374429224,
+        "total_annual_demand_mwh": 4233.53926
+      },
+      "issues": []
+    },
+    "solar": {
+      "dataset": "solar_generation",
+      "passed": true,
+      "checks": {
+        "record_count_is_8760": true,
+        "no_missing_timestamps": true,
+        "no_duplicate_timestamps": true,
+        "no_negative_solar": true,
+        "solar_zero_at_night": true,
+        "solar_within_capacity": true
+      },
+      "statistics": {
+        "max_solar_output_kwh": 628.04,
+        "mean_daylight_solar_kwh": 252.68274815595367,
+        "total_annual_generation_mwh": 1198.97964,
+        "capacity_factor_pct": 17.108727739726028
+      },
+      "issues": []
+    },
+    "prices": {
+      "dataset": "electricity_prices",
+      "passed": true,
+      "checks": {
+        "record_count_is_8760": true,
+        "no_missing_timestamps": true,
+        "no_duplicate_timestamps": true,
+        "day_ahead_prices_positive": true,
+        "real_time_prices_positive": true
+      },
+      "statistics": {
+        "mean_day_ahead_inr_kwh": 7.4750000000000005,
+        "min_day_ahead_inr_kwh": 3.864,
+        "max_day_ahead_inr_kwh": 12.744,
+        "mean_real_time_inr_kwh": 7.633417465753424,
+        "max_real_time_inr_kwh": 18.637
+      },
+      "issues": []
+    },
+    "scenarios": {
+      "dataset": "stochastic_scenarios",
+      "passed": true,
+      "checks": {
+        "exactly_500_weather_scenarios": true,
+        "weather_probabilities_sum_to_one": true,
+        "combined_records_are_12000": true,
+        "each_scenario_has_24_hours": true,
+        "distinct_scenario_probabilities_sum_to_one": true,
+        "no_missing_scenario_values": true,
+        "scenario_demand_non_negative": true,
+        "scenario_solar_non_negative": true
+      },
+      "statistics": {
+        "total_scenarios": 500,
+        "total_records": 12000,
+        "mean_scenario_demand_kwh": 557.0612725,
+        "mean_scenario_solar_kwh": 184.31468,
+        "weather_distribution": {
+          "Sunny": 175,
+          "Partly Cloudy": 150,
+          "Cloudy": 100,
+          "Rainy": 75
+        }
+      },
+      "issues": []
+    }
+  }
+}

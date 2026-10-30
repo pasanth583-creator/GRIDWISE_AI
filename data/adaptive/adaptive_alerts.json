@@ -1,0 +1,13 @@
+[
+  {
+    "alert_uuid": "ALT-BATT-6B1812",
+    "category": "Battery Readiness",
+    "severity": "INFO",
+    "triggering_metric": "min_soc_kwh",
+    "metric_value": 150.0,
+    "threshold_value": 200.0,
+    "explanation": "Expected battery storage reaches minimum buffer of 150.0 kWh (near 15% reserve limit).",
+    "recommended_action": "Ensure scheduled battery recharging occurs during early morning off-peak window.",
+    "timestamp": "2026-10-30T13:34:13.740523+00:00"
+  }
+]
