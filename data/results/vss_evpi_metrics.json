@@ -1,0 +1,10 @@
+{
+  "recourse_problem_stochastic_cost_inr": 52227.39,
+  "expected_value_of_expected_solution_eev_inr": 52498.73,
+  "wait_and_see_perfect_info_cost_ws_inr": 51629.57,
+  "value_of_stochastic_solution_vss_inr": 271.34,
+  "vss_percentage_savings": 0.52,
+  "expected_value_of_perfect_information_evpi_inr": 597.81,
+  "evpi_percentage_of_rp": 1.14,
+  "mathematical_relationship_verified": true
+}

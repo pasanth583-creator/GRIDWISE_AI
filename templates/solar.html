@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Solar Analytics{% endblock %}
+{% block topbar_title %}Solar Energy Analytics{% endblock %}
+
+{% block content %}
+<!-- Page Header Banner -->
+<div class="gw-page-banner">
+    <div>
+        <h1 class="gw-page-header-title">
+            <i class="bi bi-sun text-amber" style="color: var(--gw-amber);"></i> Solar Energy Analytics
+        </h1>
+        <p class="gw-page-header-desc">
+            Photovoltaic yield modeling, confidence interval bands, and campus direct self-consumption tracking.
+        </p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <span class="gw-badge gw-badge-amber">800 kWp Bifacial Monocrystalline</span>
+        <button class="btn btn-sm btn-gw-secondary" onclick="window.location.reload();">
+            <i class="bi bi-arrow-clockwise"></i> Pyranometer Sync
+        </button>
+    </div>
+</div>
+
+<!-- Dataset Notice Banner -->
+<div class="alert alert-info py-2 px-3 d-flex align-items-center justify-content-between gap-2 mb-4 border shadow-sm" role="alert" style="background-color: #F0FDF4; border-color: #BBF7D0 !important; color: #166534;">
+    <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-shield-check text-success fs-5"></i>
+        <span><strong>SOLAR DATASET:</strong> Physics-based clear-sky radiation model with empirical cloud attenuation. <span class="badge bg-white text-success border border-success ms-1">SYNTHETIC SIMULATION DATA – NOT LIVE METER DATA</span></span>
+    </div>
+    <span class="small text-muted d-none d-md-inline">Annual Solar Yield: 1,199 MWh | Capacity Factor: 17.1%</span>
+</div>
+
+<!-- 4 Solar KPI Cards Row -->
+<div class="row g-3 mb-4">
+    <!-- 1. Installed Solar Capacity -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Installed PV Capacity</span>
+                <div class="gw-kpi-icon amber">
+                    <i class="bi bi-sun"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value">800</span>
+                    <span class="gw-kpi-unit">kWp</span>
+                </div>
+                <p class="gw-kpi-desc">3 distributed sub-arrays</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Total Solar Generation -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Avg Daily Generation</span>
+                <div class="gw-kpi-icon green">
+                    <i class="bi bi-lightning-charge"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value">3,285</span>
+                    <span class="gw-kpi-unit">kWh</span>
+                </div>
+                <p class="gw-kpi-desc">Peak: 765 kW (clear-sky noon)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Solar Utilization Rate -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Solar Capacity Factor</span>
+                <div class="gw-kpi-icon teal">
+                    <i class="bi bi-check2-circle"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value">17.1%</span>
+                </div>
+                <p class="gw-kpi-desc">1,199 MWh annual production</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Solar Contribution to Demand -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Demand Contribution</span>
+                <div class="gw-kpi-icon blue">
+                    <i class="bi bi-pie-chart"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value">28.3%</span>
+                </div>
+                <p class="gw-kpi-desc">Direct campus load offset</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3 Charts Grid -->
+<div class="row g-4 mb-4">
+    <!-- Chart 1: Hourly Solar Generation with P10/P50/P90 Bands -->
+    <div class="col-12 col-lg-7">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-graph-up text-amber" style="color: var(--gw-amber);"></i> Hourly Solar Generation &amp; Confidence Bands (kW)
+                </h3>
+                <span class="gw-badge gw-badge-amber">P10 / P50 / P90</span>
+            </div>
+            <div class="gw-card-body">
+                <div id="solarHourlyYieldChart" style="height: 300px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>P50 expected forecast curve surrounded by P10-P90 stochastic confidence interval.</span>
+                <span class="badge bg-light text-muted border">Sample Profile</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 2: Solar Generation vs. Campus Demand -->
+    <div class="col-12 col-lg-5">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-intersect text-primary"></i> Solar vs. Campus Load
+                </h3>
+                <span class="gw-badge gw-badge-blue">Direct Coverage</span>
+            </div>
+            <div class="gw-card-body">
+                <div id="solarVsCampusDemandChart" style="height: 300px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Direct self-consumption overlay (zero export curtailment required).</span>
+                <span class="badge bg-light text-muted border">Sample Profile</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Chart 3: Solar Generation Under Weather Scenarios -->
+    <div class="col-12 col-lg-7">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-cloud-sun text-secondary"></i> PV Generation Across Weather Scenarios
+                </h3>
+                <span class="gw-badge gw-badge-gray">Weather Impacts</span>
+            </div>
+            <div class="gw-card-body">
+                <div id="solarWeatherScenariosChart" style="height: 280px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Output response under clear sky vs intermittent clouds vs heavy overcast rain.</span>
+                <span class="badge bg-light text-muted border">Sample Profile</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campus Sub-Arrays Table Card -->
+    <div class="col-12 col-lg-5">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-grid-3x3 text-secondary"></i> Campus PV Array Breakdown
+                </h3>
+                <span class="gw-badge gw-badge-green">3 Arrays</span>
+            </div>
+            <div class="gw-card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Sub-Array Location</th>
+                                <th>Capacity</th>
+                                <th>Orientation</th>
+                                <th>Efficiency</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Engineering Rooftop</strong></td>
+                                <td>400 kWp</td>
+                                <td>Tilt: 22° / South</td>
+                                <td><span class="text-success fw-bold">21.4%</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Main Library Rooftop</strong></td>
+                                <td>200 kWp</td>
+                                <td>Tilt: 15° / South</td>
+                                <td><span class="text-success fw-bold">20.8%</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>West Carport Canopy</strong></td>
+                                <td>200 kWp</td>
+                                <td>Bifacial Canopy</td>
+                                <td><span class="text-success fw-bold">22.1%</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-3 bg-light text-muted small border-top">
+                    <i class="bi bi-shield-check text-success me-1"></i>
+                    All arrays feature decentralized string inverters connected via Modbus SunSpec telemetry.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.GridWiseCharts) {
+        GridWiseCharts.renderSolarHourlyYield('solarHourlyYieldChart');
+        GridWiseCharts.renderSolarVsCampusDemand('solarVsCampusDemandChart');
+        GridWiseCharts.renderSolarWeatherScenarios('solarWeatherScenariosChart');
+    }
+});
+</script>
+{% endblock %}

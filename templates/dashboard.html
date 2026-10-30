@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+
+{% block title %}Overview Dashboard{% endblock %}
+{% block topbar_title %}Overview Dashboard{% endblock %}
+
+{% block content %}
+<!-- Main Project Header Hero Banner -->
+<div class="gw-hero-banner">
+    <div class="gw-hero-tag">
+        <i class="bi bi-shield-check"></i> Enterprise Microgrid Supervisory System
+    </div>
+    <h1 class="gw-hero-main-title">
+        STOCHASTIC OPTIMIZATION OF DAY-AHEAD ENERGY PROCUREMENT FOR A CAMPUS SOLAR + BATTERY MICROGRID
+    </h1>
+    <div class="gw-hero-subtitle">
+        GRIDWISE AI &bull; Intelligent Stochastic Energy Management Platform
+    </div>
+    <p class="gw-hero-desc">
+        An intelligent decision-support platform for optimizing campus electricity procurement under uncertain solar generation and energy demand.
+    </p>
+</div>
+
+<!-- Dataset Notice Banner -->
+<div class="alert alert-info py-2 px-3 d-flex align-items-center justify-content-between gap-2 mb-4 border shadow-sm" role="alert" style="background-color: #F0FDF4; border-color: #BBF7D0 !important; color: #166534;">
+    <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-shield-check text-success fs-5"></i>
+        <span><strong>DATASET STATUS:</strong> 500 Stochastic Scenarios &amp; 8,760-Hour Profiles Active. <span class="badge bg-white text-success border border-success ms-1">SYNTHETIC SIMULATION DATA – NOT LIVE METER DATA</span></span>
+    </div>
+    <span class="small text-muted d-none d-md-inline">Solar 800 kWp | BESS 1000 kWh (92% eff.) | Grid 1000 kW</span>
+</div>
+
+<!-- Page Title & Quick Actions Row -->
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+        <h2 class="h4 mb-1 text-dark fw-bold">Overview Dashboard</h2>
+        <p class="text-muted small mb-0">Monitor campus energy performance and optimization status.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <div class="gw-time-filters">
+            <button class="gw-time-filter-btn active" data-filter="today">Today</button>
+            <button class="gw-time-filter-btn" data-filter="7d">Last 7 Days</button>
+            <button class="gw-time-filter-btn" data-filter="30d">Last 30 Days</button>
+        </div>
+        <a href="{{ url_for('optimization.optimization_view') }}" class="btn btn-gw-primary">
+            <i class="bi bi-cpu"></i> Optimization Studio
+        </a>
+    </div>
+</div>
+
+<!-- 5 KPI Cards Row -->
+<div class="row g-3 mb-4">
+    <!-- 1. Total Energy Demand -->
+    <div class="col-12 col-sm-6 col-xl">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Total Energy Demand</span>
+                <div class="gw-kpi-icon blue">
+                    <i class="bi bi-building"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value">{{ "{:,.0f}".format(kpis.daily_demand_kwh) if kpis else "11,599" }}</span>
+                    <span class="gw-kpi-unit">kWh</span>
+                </div>
+                <p class="gw-kpi-desc">24-hour campus aggregate load</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Solar Energy Generated -->
+    <div class="col-12 col-sm-6 col-xl">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Solar Generated</span>
+                <div class="gw-kpi-icon amber">
+                    <i class="bi bi-sun"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value">{{ "{:,.0f}".format(kpis.daily_solar_kwh) if kpis else "3,285" }}</span>
+                    <span class="gw-kpi-unit">kWh</span>
+                </div>
+                <p class="gw-kpi-desc">Peak yield: {{ dataset_stats.peak_solar_kw if dataset_stats else "765.0" }} kW (800 kWp PV)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Battery State of Charge -->
+    <div class="col-12 col-sm-6 col-xl">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Battery SoC</span>
+                <div class="gw-kpi-icon purple">
+                    <i class="bi bi-battery-charging"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value">{{ kpis.battery_soc_pct if kpis else "50" }}%</span>
+                    <span class="gw-kpi-unit">{{ kpis.battery_soc_kwh if kpis else "500" }} kWh</span>
+                </div>
+                <p class="gw-kpi-desc">Reference nominal capacity: 1,000 kWh</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Grid Electricity Purchased -->
+    <div class="col-12 col-sm-6 col-xl">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Grid Purchased</span>
+                <div class="gw-kpi-icon teal">
+                    <i class="bi bi-lightning-charge"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value">{{ "{:,.0f}".format(kpis.grid_purchased_kwh) if kpis else "8,314" }}</span>
+                    <span class="gw-kpi-unit">kWh</span>
+                </div>
+                <p class="gw-kpi-desc">Net day-ahead import requirement</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Expected Energy Cost -->
+    <div class="col-12 col-sm-6 col-xl">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Expected Energy Cost</span>
+                <div class="gw-kpi-icon green">
+                    <i class="bi bi-cash-coin"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value">₹{{ "{:,.2f}".format(kpis.expected_daily_cost_inr) if kpis else "62,353.50" }}</span>
+                </div>
+                <p class="gw-kpi-desc text-muted"><i class="bi bi-tag"></i> Avg TOU Rate: ₹{{ dataset_stats.avg_da_price_inr_kwh if dataset_stats else "7.50" }}/kWh</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section 1: 24-Hour Energy Balance & Solar vs Demand -->
+<div class="row g-4 mb-4">
+    <!-- Chart A: 24-Hour Energy Balance -->
+    <div class="col-12 col-lg-7">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-graph-up text-success"></i> 24-Hour Energy Balance (Power Flow)
+                </h3>
+                <span class="gw-badge gw-badge-green">Operational Baseline</span>
+            </div>
+            <div class="gw-card-body">
+                <div id="overviewBalanceChart" style="height: 320px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Stacked generation, BESS discharge and grid import covering campus demand.</span>
+                <span class="badge bg-light text-muted border">Sample Profile</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart B: Solar Generation vs Demand -->
+    <div class="col-12 col-lg-5">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-sun text-amber"></i> Solar Generation vs. Demand
+                </h3>
+                <span class="gw-badge gw-badge-amber">800 kWp PV Array</span>
+            </div>
+            <div class="gw-card-body">
+                <div id="overviewSolarVsDemandChart" style="height: 320px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Peak solar generation aligns with mid-day campus academic load.</span>
+                <span class="badge bg-light text-muted border">Synthetic Dataset</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section 2: Energy Source Distribution & Daily Energy Cost Summary -->
+<div class="row g-4 mb-4">
+    <!-- Chart C: Energy Source Distribution -->
+    <div class="col-12 col-lg-4">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-pie-chart text-primary"></i> Energy Source Distribution
+                </h3>
+                <span class="gw-badge gw-badge-blue">Daily Total</span>
+            </div>
+            <div class="gw-card-body d-flex align-items-center justify-content-center">
+                <div id="overviewSourceDistributionChart" style="height: 280px; width: 100%;"></div>
+            </div>
+            <div class="gw-card-footer text-center">
+                <strong>65% Grid Import</strong> &bull; <strong>26% Solar Direct</strong> &bull; <strong>9% BESS Storage</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart D: Daily Energy Cost Summary -->
+    <div class="col-12 col-lg-8">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-bar-chart text-success"></i> Daily Energy Cost Summary (TOU Periods)
+                </h3>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="gw-badge gw-badge-blue" style="font-size: 0.7rem;">Off-Peak ₹4.20</span>
+                    <span class="gw-badge gw-badge-teal" style="font-size: 0.7rem;">Normal ₹7.50</span>
+                    <span class="gw-badge gw-badge-amber" style="font-size: 0.7rem;">Peak ₹11.80</span>
+                </div>
+            </div>
+            <div class="gw-card-body">
+                <div id="overviewDailyCostChart" style="height: 280px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Hourly procurement expenses (INR) across utility time-of-use rating tiers.</span>
+                <span class="badge bg-light text-muted border">TOU Tariff (INR)</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Optimization Summary & Recent System Activity Row -->
+<div class="row g-4">
+    <!-- Optimization Summary Section -->
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-cpu text-success"></i> Optimization Engine Status
+                </h3>
+                <span class="gw-badge gw-badge-green"><span class="pulse-indicator"></span> Ready</span>
+            </div>
+            <div class="gw-card-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded">
+                            <span class="text-muted small d-block">Mathematical Solver</span>
+                            <strong class="text-dark">SciPy HiGHS (Interior Point)</strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded">
+                            <span class="text-muted small d-block">Stochastic Scenarios</span>
+                            <strong class="text-dark">500 LHS Scenarios</strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded">
+                            <span class="text-muted small d-block">Formulation Model</span>
+                            <strong class="text-dark">Two-Stage Stochastic + CVaR</strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded">
+                            <span class="text-muted small d-block">Value of Stochastic Sol. (VSS)</span>
+                            <strong class="text-success">₹14,520 / Day Hedged</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-3 border rounded bg-white small text-muted">
+                    <i class="bi bi-info-circle text-primary me-1"></i>
+                    The optimization studio evaluates correlated irradiance and demand distributions to minimize expected energy purchases while hedging against spot price spikes via Conditional Value-at-Risk.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent System Activity / Telemetry Logs -->
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-clock-history text-secondary"></i> Recent System Activity
+                </h3>
+                <a href="{{ url_for('analytics.monitoring_view') }}" class="small text-decoration-none">View SCADA Feed &rarr;</a>
+            </div>
+            <div class="gw-card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Component</th>
+                                <th>Event Description</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><small class="text-muted">13:15:00</small></td>
+                                <td><strong>BESS Inverter</strong></td>
+                                <td>Switched to standby; SoC at 68%</td>
+                                <td><span class="gw-badge gw-badge-green">OK</span></td>
+                            </tr>
+                            <tr>
+                                <td><small class="text-muted">13:00:00</small></td>
+                                <td><strong>Pyranometer</strong></td>
+                                <td>Hourly GHI integrated at 824 W/m²</td>
+                                <td><span class="gw-badge gw-badge-green">OK</span></td>
+                            </tr>
+                            <tr>
+                                <td><small class="text-muted">12:30:00</small></td>
+                                <td><strong>Solar Array 1</strong></td>
+                                <td>Peak generation recorded at 682 kW</td>
+                                <td><span class="gw-badge gw-badge-green">OK</span></td>
+                            </tr>
+                            <tr>
+                                <td><small class="text-muted">12:00:00</small></td>
+                                <td><strong>Grid Meter (POI)</strong></td>
+                                <td>11kV Substation synchronism confirmed</td>
+                                <td><span class="gw-badge gw-badge-teal">LOCKED</span></td>
+                            </tr>
+                            <tr>
+                                <td><small class="text-muted">06:00:00</small></td>
+                                <td><strong>Solver Engine</strong></td>
+                                <td>Day-ahead 24h baseline dispatch plan verified</td>
+                                <td><span class="gw-badge gw-badge-blue">SCHEDULED</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Render all 4 Overview Charts
+    if (window.GridWiseCharts) {
+        GridWiseCharts.renderOverviewBalance('overviewBalanceChart');
+        GridWiseCharts.renderOverviewSolarVsDemand('overviewSolarVsDemandChart');
+        GridWiseCharts.renderOverviewSourceDistribution('overviewSourceDistributionChart');
+        GridWiseCharts.renderOverviewDailyCost('overviewDailyCostChart');
+    }
+});
+</script>
+{% endblock %}

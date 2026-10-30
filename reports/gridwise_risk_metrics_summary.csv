@@ -1,0 +1,2 @@
+expected_cost_inr,min_scenario_cost_inr,max_scenario_cost_inr,std_scenario_cost_inr,median_scenario_cost_inr,percentile_90_cost_inr,var_95_cost_inr,cvar_95_cost_inr,confidence_level_alpha,risk_parameter_lambda
+69540.75,41167.68,109805.79,17302.32,65425.92,96809.7,101273.67,104400.74,0.95,0.0

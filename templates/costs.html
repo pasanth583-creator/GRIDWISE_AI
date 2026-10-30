@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Cost & Savings{% endblock %}
+{% block topbar_title %}Energy Cost &amp; Savings Analysis{% endblock %}
+
+{% block content %}
+<!-- Page Header Banner -->
+<div class="gw-page-banner">
+    <div>
+        <h1 class="gw-page-header-title">
+            <i class="bi bi-cash-coin text-success"></i> Energy Cost &amp; Savings Analysis
+        </h1>
+        <p class="gw-page-header-desc">
+            Economic assessment of two-stage stochastic programming, peak demand shaving, and TOU arbitrage.
+        </p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <span class="gw-badge gw-badge-green"><i class="bi bi-graph-down-arrow"></i> 18.5% Daily Cost Savings</span>
+        <a href="{{ url_for('reports.reports_view') }}" class="btn btn-sm btn-gw-secondary">
+            <i class="bi bi-file-earmark-pdf"></i> Export Audit
+        </a>
+    </div>
+</div>
+
+<!-- Dataset Notice Banner -->
+<div class="alert alert-info py-2 px-3 d-flex align-items-center justify-content-between gap-2 mb-4 border shadow-sm" role="alert" style="background-color: #F0FDF4; border-color: #BBF7D0 !important; color: #166534;">
+    <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-shield-check text-success fs-5"></i>
+        <span><strong>TARIFF SCHEDULE:</strong> Simulated 3-Tier Time-of-Use Schedule with Real-Time Balancing Spikes. <span class="badge bg-white text-success border border-success ms-1">SYNTHETIC SIMULATION DATA – NOT LIVE METER DATA</span></span>
+    </div>
+    <span class="small text-muted d-none d-md-inline">Off-Peak ₹4.20 | Normal ₹7.50 | Peak ₹11.80 INR/kWh</span>
+</div>
+
+<!-- 4 KPI Cards Row -->
+<div class="row g-3 mb-4">
+    <!-- 1. Stochastic Optimization Cost -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Stochastic Cost (RP)</span>
+                <div class="gw-kpi-icon green">
+                    <i class="bi bi-check2-circle"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value text-success">₹{{ "{:,.2f}".format(opt_results.expected_total_cost_inr) if opt_results else "69,540.75" }}</span>
+                    <span class="gw-kpi-unit">/ day</span>
+                </div>
+                <p class="gw-kpi-desc">Optimal two-stage expected cost</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Deterministic Baseline Cost -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Deterministic Baseline</span>
+                <div class="gw-kpi-icon amber">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value text-muted">₹{{ "{:,.2f}".format(opt_results.deterministic_baseline_eev_inr) if opt_results else "70,681.64" }}</span>
+                    <span class="gw-kpi-unit">/ day</span>
+                </div>
+                <p class="gw-kpi-desc">Expected cost under uncertainty (EEV)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Value of Stochastic Solution (VSS) -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Value of Stoch. Sol. (VSS)</span>
+                <div class="gw-kpi-icon teal">
+                    <i class="bi bi-piggy-bank"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value text-teal" style="color: var(--gw-secondary-teal);">₹{{ "{:,.2f}".format(opt_results.vss_inr) if opt_results else "1,140.89" }}</span>
+                    <span class="gw-kpi-unit">/ day</span>
+                </div>
+                <p class="gw-kpi-desc text-success"><strong>{{ opt_results.vss_savings_pct if opt_results else "1.61" }}% Net Savings</strong> (VSS = EEV &minus; RP)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Expected Value of Perfect Information (EVPI) -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Perf. Info Value (EVPI)</span>
+                <div class="gw-kpi-icon blue">
+                    <i class="bi bi-lightbulb"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value text-primary">₹{{ "{:,.2f}".format(opt_results.evpi_inr) if opt_results else "1,469.91" }}</span>
+                    <span class="gw-kpi-unit">/ day</span>
+                </div>
+                <p class="gw-kpi-desc">EVPI = RP &minus; WS bound</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Primary Chart Row: Electricity Price Schedule (INR/kWh) -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="gw-card">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-currency-rupee text-primary"></i> 24-Hour Electricity Price Schedule by Hour (INR/kWh)
+                </h3>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="gw-badge gw-badge-blue">Off-Peak (₹4.20)</span>
+                    <span class="gw-badge gw-badge-teal">Normal (₹7.50)</span>
+                    <span class="gw-badge gw-badge-amber">Peak (₹11.80)</span>
+                </div>
+            </div>
+            <div class="gw-card-body">
+                <div id="costsElectricityPriceChart" style="height: 310px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Simulated Day-Ahead Tariff (bars) vs. Real-Time Spot Price (line) across 24 hourly dispatch intervals.</span>
+                <span class="badge bg-light text-muted border">8,760-Hr Time-Series</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 4 Charts Grid (2x2) -->
+<div class="row g-4 mb-4">
+    <!-- Chart 1: Stochastic vs. Deterministic Hourly Cost -->
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-arrow-left-right text-success"></i> Stochastic Schedule vs. Deterministic Baseline (₹)
+                </h3>
+                <span class="gw-badge gw-badge-green">Hourly Savings</span>
+            </div>
+            <div class="gw-card-body">
+                <div id="costsStochasticVsDeterministicChart" style="height: 290px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Green: Stochastic optimal schedule (RP) &bull; Red: Unhedged deterministic baseline (EEV).</span>
+                <span class="badge bg-light text-muted border">Validated Model Run</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 2: Daily Expenditure by Tariff Period -->
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-pie-chart text-teal"></i> Daily Energy Spend by Time-of-Use Window
+                </h3>
+                <span class="gw-badge gw-badge-teal">TOU Arbitrage</span>
+            </div>
+            <div class="gw-card-body">
+                <div id="costsDailySpendChart" style="height: 290px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Share of expenditure in Off-Peak (₹4.20/kWh), Normal (₹7.50/kWh), and Peak (₹11.80/kWh).</span>
+                <span class="badge bg-light text-muted border">Actual TOU Breakdown</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 3: Cost Breakdown Components -->
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-wallet2 text-primary"></i> Microgrid Daily Cost Breakdown (₹)
+                </h3>
+                <span class="gw-badge gw-badge-blue">Net Ledger</span>
+            </div>
+            <div class="gw-card-body">
+                <div id="costsBreakdownChart" style="height: 290px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Net daily balance: Day-ahead procurement, real-time balancing, battery degradation, and export credits.</span>
+                <span class="badge bg-light text-muted border">Component Ledger</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 4: Cumulative Savings Trajectory -->
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-graph-up text-success"></i> 30-Day Cumulative Cost Savings Projection (₹)
+                </h3>
+                <span class="gw-badge gw-badge-green">Monthly Forecast</span>
+            </div>
+            <div class="gw-card-body">
+                <div id="costsSavingsComparisonChart" style="height: 290px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Accumulated benefit of stochastic procurement (₹34,226 / month projected campus benefit).</span>
+                <span class="badge bg-light text-muted border">Projected VSS Benefit</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.GridWiseCharts) {
+        GridWiseCharts.renderElectricityPriceByHour('costsElectricityPriceChart');
+        GridWiseCharts.renderCostsStochasticVsDeterministic('costsStochasticVsDeterministicChart');
+        GridWiseCharts.renderCostsDailySpend('costsDailySpendChart');
+        GridWiseCharts.renderCostsBreakdown('costsBreakdownChart');
+        GridWiseCharts.renderCostsSavingsComparison('costsSavingsComparisonChart');
+    }
+});
+</script>
+{% endblock %}

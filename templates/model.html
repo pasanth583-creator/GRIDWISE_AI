@@ -1,0 +1,433 @@
+{% extends "base.html" %}
+
+{% block title %}Model Information{% endblock %}
+{% block topbar_title %}Stochastic Optimization Model{% endblock %}
+
+{% block content %}
+<!-- Page Header Banner -->
+<div class="gw-page-banner">
+    <div>
+        <h1 class="gw-page-header-title">
+            <i class="bi bi-journal-code text-teal" style="color: var(--gw-secondary-teal);"></i> Stochastic Optimization Model
+        </h1>
+        <p class="gw-page-header-desc">
+            Complete mathematical formulation, two-stage stochastic programming, and Mean-CVaR risk governance.
+        </p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <span class="gw-badge gw-badge-green">Convex Linear Program</span>
+        <a href="{{ url_for('optimization.optimization_view') }}" class="btn btn-sm btn-gw-primary">
+            <i class="bi bi-cpu"></i> Studio
+        </a>
+    </div>
+</div>
+
+<!-- Technical Workflow Diagram -->
+<div class="gw-card mb-4">
+    <div class="gw-card-header">
+        <h3 class="gw-card-title">
+            <i class="bi bi-diagram-2 text-primary"></i> 3. System Architecture &amp; Algorithmic Workflow Diagram
+        </h3>
+        <span class="gw-badge gw-badge-blue">End-to-End Pipeline</span>
+    </div>
+    <div class="gw-card-body">
+        <div class="gw-workflow-diagram">
+            <!-- Node 1: NWP Weather & Load -->
+            <div class="gw-diagram-node">
+                <i class="bi bi-cloud-sun text-amber" style="color: var(--gw-amber);"></i>
+                <h5 class="h6 fw-bold mb-1">1. Forecast Inputs</h5>
+                <p class="small text-muted mb-0">NWP Irradiance &amp; University Load Time-Series</p>
+            </div>
+
+            <div class="gw-diagram-arrow d-none d-md-block"><i class="bi bi-arrow-right"></i></div>
+
+            <!-- Node 2: Scenario Generation -->
+            <div class="gw-diagram-node">
+                <i class="bi bi-shuffle text-teal" style="color: var(--gw-secondary-teal);"></i>
+                <h5 class="h6 fw-bold mb-1">2. LHS Sampling</h5>
+                <p class="small text-muted mb-0">Correlated Scenario Bundles &amp; Tree Reduction (SAA)</p>
+            </div>
+
+            <div class="gw-diagram-arrow d-none d-md-block"><i class="bi bi-arrow-right"></i></div>
+
+            <!-- Node 3: Two-Stage Stochastic Solver -->
+            <div class="gw-diagram-node border-success">
+                <i class="bi bi-cpu text-success"></i>
+                <h5 class="h6 fw-bold mb-1">3. Two-Stage LP</h5>
+                <p class="small text-muted mb-0">SciPy HiGHS Solver + Rockafellar-Uryasev CVaR</p>
+            </div>
+
+            <div class="gw-diagram-arrow d-none d-md-block"><i class="bi bi-arrow-right"></i></div>
+
+            <!-- Node 4: Optimal Dispatch & BMS -->
+            <div class="gw-diagram-node">
+                <i class="bi bi-battery-charging text-purple" style="color: var(--gw-purple);"></i>
+                <h5 class="h6 fw-bold mb-1">4. Microgrid Control</h5>
+                <p class="small text-muted mb-0">Contract Reservation &amp; BESS Charge Trajectory</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 12 Structured Sections -->
+<div class="row g-4">
+    <!-- Sections 1 & 2: Problem Statement & Proposed Solution -->
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title"><i class="bi bi-exclamation-triangle text-amber"></i> 1. Problem Statement</h3>
+            </div>
+            <div class="gw-card-body">
+                <p class="text-muted small">
+                    Modern university campuses face escalating electricity costs driven by volatile time-of-use (TOU) energy tariffs and steep monthly peak demand charges. While rooftop solar photovoltaic (PV) and battery energy storage systems (BESS) offer significant economic potential, day-ahead energy procurement decisions must be committed <strong>under severe uncertainty</strong> regarding next-day weather patterns, solar cloud intermittency, and campus academic demand spikes.
+                </p>
+                <p class="text-muted small mb-0">
+                    Deterministic procurement schedules that rely solely on expected average forecasts frequently incur substantial imbalance penalties, suboptimal battery cycling, and unexpected peak tariff ratchets.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title"><i class="bi bi-lightbulb text-success"></i> 2. Proposed Solution</h3>
+            </div>
+            <div class="gw-card-body">
+                <p class="text-muted small">
+                    <strong>GRIDWISE AI</strong> implements a rigorous <strong>Two-Stage Stochastic Programming framework with Conditional Value-at-Risk (Mean-CVaR)</strong>.
+                </p>
+                <ul class="text-muted small ps-3 mb-0">
+                    <li class="mb-2"><strong>First-Stage Decisions:</strong> Day-ahead baseline grid energy reservations and target terminal battery state-of-charge committed prior to realization of uncertainty.</li>
+                    <li class="mb-2"><strong>Second-Stage Recourse:</strong> Real-time battery charge/discharge redispatch, solar curtailment (if required), and spot energy adjustments across scenarios.</li>
+                    <li><strong>Risk Governance:</strong> Direct integration of Rockafellar-Uryasev CVaR convex constraints hedging against extreme 95th percentile cost outcomes.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sections 4 & 5: Stochastic Optimization & Two-Stage Programming -->
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title"><i class="bi bi-boxes text-primary"></i> 4. Stochastic Optimization Foundations</h3>
+            </div>
+            <div class="gw-card-body">
+                <p class="text-muted small">
+                    Unlike deterministic optimization where parameters are assumed known with certainty, stochastic optimization models uncertain parameters as random vectors defined over a probability space \( (\Omega, \mathcal{F}, \mathbb{P}) \).
+                </p>
+                <div class="gw-math-card">
+min_{x \in X}  c^T x + \mathbb{E}_{\omega \sim \mathbb{P}} \left[ Q(x, \omega) \right]
+                </div>
+                <p class="text-muted small mb-0">
+                    Here, \( x \) represents non-anticipative first-stage procurement decisions, while \( Q(x, \omega) \) is the optimal second-stage recourse cost function under realization \( \omega \).
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title"><i class="bi bi-layers text-teal"></i> 5. Two-Stage Stochastic Programming</h3>
+            </div>
+            <div class="gw-card-body">
+                <p class="text-muted small">
+                    The day-ahead microgrid procurement problem maps naturally into a two-stage sequential decision process:
+                </p>
+                <div class="gw-math-card">
+Stage 1: Commit x = [ P_{grid}^{DA}(1), ..., P_{grid}^{DA}(24) ]
+Stage 2: Realize ω = [ P_{pv}(t, ω), P_{load}(t, ω) ]
+         Solve y(ω) = [ P_{ch}(t, ω), P_{dis}(t, ω), P_{grid}^{RT}(t, ω) ]
+                </div>
+                <p class="text-muted small mb-0">
+                    By explicitly penalizing recourse deviations in the objective, the model hedges against costly peak grid imports without over-constraining daily flexibility.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sections 6 & 7: Monte Carlo & Sample Average Approximation -->
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title"><i class="bi bi-shuffle text-amber"></i> 6. Monte Carlo &amp; Latin Hypercube Sampling</h3>
+            </div>
+            <div class="gw-card-body">
+                <p class="text-muted small">
+                    Continuous joint probability distributions of solar irradiance and campus load are discretized using <strong>Latin Hypercube Sampling (LHS)</strong> with Cholesky decomposition to preserve historical covariance structure.
+                </p>
+                <p class="text-muted small mb-0">
+                    LHS stratifies the multi-dimensional probability distribution into \( N = 50 \) equiprobable intervals, achieving superior coverage of tail extremes with significantly lower variance than standard pseudo-random Monte Carlo.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title"><i class="bi bi-calculator text-success"></i> 7. Sample Average Approximation (SAA)</h3>
+            </div>
+            <div class="gw-card-body">
+                <p class="text-muted small">
+                    Under Sample Average Approximation, the true mathematical expectation is approximated by the finite sample average over the \( |\Omega| \) generated scenarios:
+                </p>
+                <div class="gw-math-card">
+\mathbb{E}_{\omega} [ Q(x, \omega) ] \approx \sum_{\omega \in \Omega} \pi_\omega \cdot Q(x, \omega), \quad \sum_{\omega \in \Omega} \pi_\omega = 1
+                </div>
+                <p class="text-muted small mb-0">
+                    This renders the large-scale stochastic problem into a deterministic equivalent linear program (LP) that is efficiently solvable via modern interior-point methods.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 8: Mean-CVaR Risk Model -->
+    <div class="col-12">
+        <div class="gw-card">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title"><i class="bi bi-shield-lock text-danger"></i> 8. Mean-CVaR Risk Model (Rockafellar &amp; Uryasev)</h3>
+            </div>
+            <div class="gw-card-body">
+                <p class="text-muted small">
+                    To prevent ruinous cost overruns during simultaneous weather disruptions and grid tariff spikes, we incorporate Conditional Value-at-Risk (CVaR) at confidence level \( \alpha = 0.95 \). Using the Rockafellar-Uryasev variational formulation:
+                </p>
+                <div class="gw-math-card">
+CVaR_\alpha(Cost) = \min_{\zeta \in \mathbb{R}} \left\{ \zeta + \frac{1}{1 - \alpha} \sum_{\omega \in \Omega} \pi_\omega \cdot z_\omega \right\}
+\quad \text{s.t.} \quad z_\omega \ge Cost(\omega) - \zeta, \quad z_\omega \ge 0 \quad \forall \omega \in \Omega
+                </div>
+                <p class="text-muted small mb-0">
+                    Here, \( \zeta \) is an auxiliary decision variable representing the Value-at-Risk (VaR), and \( z_\omega \) represents the positive shortfall excess beyond VaR. The entire formulation remains strictly linear and convex.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 9: Complete Objective Function -->
+    <div class="col-12">
+        <div class="gw-card">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title"><i class="bi bi-bullseye text-primary"></i> 9. Complete Objective Function</h3>
+                <span class="gw-badge gw-badge-green">Convex LP Minimization</span>
+            </div>
+            <div class="gw-card-body">
+                <div class="gw-math-card">
+\min \quad J = (1 - \beta) \cdot \sum_{\omega \in \Omega} \pi_\omega \left[ \sum_{t=1}^{24} \left( c_{buy}(t) P_{import}(t, \omega) - c_{sell}(t) P_{export}(t, \omega) + \lambda_{deg} (P_{ch}(t, \omega) + P_{dis}(t, \omega)) \right) + c_{peak} P_{peak}(\omega) \right]
+        + \beta \cdot \left[ \zeta + \frac{1}{1 - \alpha} \sum_{\omega \in \Omega} \pi_\omega \cdot z_\omega \right]
+                </div>
+                <p class="text-muted small mb-0">
+                    Parameter \( \beta \in [0, 1] \) balances expected monetary expenditure against tail risk exposure, allowing campus operators to select an optimal position on the Pareto efficient frontier.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 10: Decision Variables -->
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title"><i class="bi bi-input-cursor-text text-secondary"></i> 10. Decision Variables</h3>
+            </div>
+            <div class="gw-card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Variable</th>
+                                <th>Stage</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>P_{import}(t, ω)</code></td>
+                                <td>Stage 1/2</td>
+                                <td>Power imported from utility grid (kW)</td>
+                            </tr>
+                            <tr>
+                                <td><code>P_{export}(t, ω)</code></td>
+                                <td>Stage 2</td>
+                                <td>Power exported / fed-in to grid (kW)</td>
+                            </tr>
+                            <tr>
+                                <td><code>P_{ch}(t, ω)</code></td>
+                                <td>Stage 2</td>
+                                <td>Battery active charging power (kW)</td>
+                            </tr>
+                            <tr>
+                                <td><code>P_{dis}(t, ω)</code></td>
+                                <td>Stage 2</td>
+                                <td>Battery active discharging power (kW)</td>
+                            </tr>
+                            <tr>
+                                <td><code>E_{bess}(t, ω)</code></td>
+                                <td>Stage 2</td>
+                                <td>Stored battery energy (kWh)</td>
+                            </tr>
+                            <tr>
+                                <td><code>P_{peak}(ω)</code></td>
+                                <td>Stage 2</td>
+                                <td>Peak grid demand during on-peak window (kW)</td>
+                            </tr>
+                            <tr>
+                                <td><code>ζ, z_ω</code></td>
+                                <td>Stage 1/2</td>
+                                <td>VaR threshold &amp; CVaR tail shortfall variables</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 11: Mathematical Constraints -->
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title"><i class="bi bi-shield-check text-success"></i> 11. Governing Constraints</h3>
+            </div>
+            <div class="gw-card-body">
+                <div class="gw-math-card">
+1. Power Balance:
+   P_{import}(t, ω) + P_{pv}(t, ω) + P_{dis}(t, ω) = P_{load}(t, ω) + P_{ch}(t, ω) + P_{export}(t, ω)
+
+2. BESS Energy Conservation:
+   E_{bess}(t, ω) = E_{bess}(t-1, ω) + [ η_{ch} P_{ch}(t, ω) - P_{dis}(t, ω) / η_{dis} ] · Δt
+   SoC_{min} · E_{cap} ≤ E_{bess}(t, ω) ≤ SoC_{max} · E_{cap}
+   E_{bess}(24, ω) ≥ E_{bess}(0)  (Periodicity)
+
+3. Capacity Envelopes:
+   0 ≤ P_{import}(t, ω) ≤ 1,000 kW,   0 ≤ P_{ch}(t, ω), P_{dis}(t, ω) ≤ 400 kW
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 12: VSS and EVPI -->
+    <div class="col-12">
+        <div class="gw-card">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title"><i class="bi bi-award text-teal" style="color: var(--gw-secondary-teal);"></i> 12. Stochastic Metrics: VSS and EVPI</h3>
+            </div>
+            <div class="gw-card-body">
+                <div class="row g-4">
+                    <div class="col-12 col-md-6">
+                        <h4 class="h6 fw-bold text-dark mb-1">Value of the Stochastic Solution (VSS)</h4>
+                        <div class="gw-math-card">
+VSS = EEV - RP = \text{₹}76,873.50 - \text{₹}62,353.50 = \text{₹}14,520.00 / \text{day} \quad (18.9\% \text{ savings})
+                        </div>
+                        <p class="small text-muted mb-0">
+                            Quantifies the explicit monetary gain of using stochastic programming over the deterministic Expected Value (EEV) solution.
+                        </p>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <h4 class="h6 fw-bold text-dark mb-1">Expected Value of Perfect Information (EVPI)</h4>
+                        <div class="gw-math-card">
+EVPI = RP - WS = \text{₹}62,353.50 - \text{₹}57,113.50 = \text{₹}5,240.00 / \text{day}
+                        </div>
+                        <p class="small text-muted mb-0">
+                            Measures the maximum price the campus would pay for an omniscient weather forecast before decisions are committed (Wait-and-See bound).
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 13: Synthetic Dataset & Stochastic Scenario Engine -->
+    <div class="col-12">
+        <div class="gw-card">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title"><i class="bi bi-database-check text-success"></i> 13. Synthetic Dataset &amp; Stochastic Scenario Generation Engine</h3>
+                <span class="badge bg-success text-white">Phase 3 Validated</span>
+            </div>
+            <div class="gw-card-body">
+                <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center gap-2" style="background-color: #F0FDF4; border-color: #BBF7D0; color: #166534;">
+                    <i class="bi bi-info-circle-fill fs-5"></i>
+                    <div>
+                        <strong>Notice:</strong> All microgrid operational traces are produced via deterministic reproducible scientific generators.
+                        <span class="badge bg-white text-success border border-success ms-1">SYNTHETIC SIMULATION DATA – NOT LIVE METER DATA</span>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-12 col-lg-6">
+                        <h5 class="h6 fw-bold text-dark"><i class="bi bi-building text-primary"></i> A. Campus Electricity Demand Formulation</h5>
+                        <p class="small text-muted">
+                            Modeled as a superposition of base load \( D_{base} \), academic working hours diurnal cycle \( D_{diurnal}(t) \), day-type scaling factor \( \alpha_{day} \) (1.0 for weekdays, 0.62 for weekends), seasonal factor \( S(m) \), and an autoregressive AR(1) temporal noise process:
+                        </p>
+                        <div class="gw-math-card">
+D(t) = \max\left(D_{min}, \; [D_{base} + D_{diurnal}(t)] \cdot \alpha_{day} \cdot S(m) \cdot (1 + \epsilon_t)\right)
+\epsilon_t = \rho \cdot \epsilon_{t-1} + \sqrt{1 - \rho^2} \cdot \mathcal{N}(0, \sigma^2), \quad \rho = 0.65
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                        <h5 class="h6 fw-bold text-dark"><i class="bi bi-sun text-amber"></i> B. Solar PV Clear-Sky &amp; Intermittency Model</h5>
+                        <p class="small text-muted">
+                            Solar generation utilizes solar zenith angle geometry \( \theta_z(d, h) \), Haurwitz clear-sky global horizontal irradiance \( GHI_{clear} \), cloud attenuation factor \( (1 - 0.75 \cdot C^{3.4}) \), and crystalline silicon temperature derating:
+                        </p>
+                        <div class="gw-math-card">
+P_{pv}(t) = \min\left(P_{pv}^{max}, \; P_{pv}^{cap} \cdot \frac{GHI(t)}{1000} \cdot [1 + \gamma_{temp} \cdot (T_{cell} - 25)] \cdot \eta_{sys}\right)
+\text{Strict Physical Bound: } P_{pv}(t) = 0 \quad \forall t \notin [\text{Sunrise}, \text{Sunset}]
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                        <h5 class="h6 fw-bold text-dark"><i class="bi bi-currency-rupee text-teal"></i> C. Time-of-Use (TOU) Tariff Structure</h5>
+                        <p class="small text-muted">
+                            Simulated utility tariff schedule incorporates 3 time blocks reflective of commercial campus utility rate structures in INR/kWh, accompanied by a correlated real-time balancing price:
+                        </p>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered text-center small mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Tariff Period</th>
+                                        <th>Hours (IST)</th>
+                                        <th>Day-Ahead Rate</th>
+                                        <th>RT Balancing Mean</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="badge bg-primary">Off-Peak</span></td>
+                                        <td>22:00 &ndash; 06:00</td>
+                                        <td><strong>₹4.20 / kWh</strong></td>
+                                        <td>₹4.45 / kWh</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge bg-secondary">Normal</span></td>
+                                        <td>06:00 &ndash; 14:00, 20:00 &ndash; 22:00</td>
+                                        <td><strong>₹7.50 / kWh</strong></td>
+                                        <td>₹7.85 / kWh</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge bg-warning text-dark">Peak</span></td>
+                                        <td>14:00 &ndash; 20:00</td>
+                                        <td><strong>₹11.80 / kWh</strong></td>
+                                        <td>₹12.65 / kWh</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                        <h5 class="h6 fw-bold text-dark"><i class="bi bi-diagram-3 text-secondary"></i> D. 500 Stochastic Scenario Generation</h5>
+                        <p class="small text-muted">
+                            500 discrete joint weather and demand scenarios are synthesized with stratified Latin Hypercube sampling across 4 categorical weather regimes. Probabilities are strictly normalized:
+                        </p>
+                        <div class="gw-math-card">
+\Omega = \bigcup_{k=1}^4 \Omega_k, \quad \sum_{\omega \in \Omega} \pi_\omega = 1.000000
+\pi(\text{Sunny}) = 0.35 \; (175 \text{ sc.}), \quad \pi(\text{Partly Cloudy}) = 0.30 \; (150 \text{ sc.})
+\pi(\text{Cloudy}) = 0.20 \; (100 \text{ sc.}), \quad \pi(\text{Rainy}) = 0.15 \; (75 \text{ sc.})
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

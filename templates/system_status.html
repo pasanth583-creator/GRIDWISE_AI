@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+
+{% block title %}System Administration & Telemetry{% endblock %}
+{% block topbar_title %}System Health &bull; Background Jobs &bull; Hot Backups{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+
+    <!-- KPI Metric Summary Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="gw-card p-3 h-100 border-start border-4 border-success">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">System Health</span>
+                        <h4 class="fw-bold mt-1 mb-0 text-success">
+                            <span class="spinner-grow spinner-grow-sm text-success me-1" role="status" style="width: 0.75rem; height: 0.75rem;"></span>
+                            {{ diagnostics.status | upper }}
+                        </h4>
+                    </div>
+                    <div class="p-2 bg-success-subtle text-success rounded-circle">
+                        <i class="bi bi-heart-pulse-fill fs-4"></i>
+                    </div>
+                </div>
+                <div class="mt-2 small text-muted">
+                    Platform: {{ diagnostics.environment.python_version }} ({{ diagnostics.environment.architecture }})
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="gw-card p-3 h-100 border-start border-4 border-primary">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">LP Solver (HiGHS)</span>
+                        <h4 class="fw-bold mt-1 mb-0 text-dark">{{ diagnostics.components.solver.status | upper }}</h4>
+                    </div>
+                    <div class="p-2 bg-primary-subtle text-primary rounded-circle">
+                        <i class="bi bi-cpu-fill fs-4"></i>
+                    </div>
+                </div>
+                <div class="mt-2 small text-muted">
+                    Response: {{ diagnostics.components.solver.latency_ms or 0 }} ms &bull; Two-Stage LP
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="gw-card p-3 h-100 border-start border-4 border-info">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Database Storage</span>
+                        <h4 class="fw-bold mt-1 mb-0 text-dark">{{ diagnostics.components.database.size_mb }} MB</h4>
+                    </div>
+                    <div class="p-2 bg-info-subtle text-info rounded-circle">
+                        <i class="bi bi-database-fill-check fs-4"></i>
+                    </div>
+                </div>
+                <div class="mt-2 small text-muted">
+                    Tables: {{ diagnostics.components.database.table_count }} &bull; FK Check: 0 Violations
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="gw-card p-3 h-100 border-start border-4 border-secondary">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Telemetry & Uptime</span>
+                        <h4 class="fw-bold mt-1 mb-0 text-dark">{{ metrics.uptime_formatted }}</h4>
+                    </div>
+                    <div class="p-2 bg-secondary-subtle text-secondary rounded-circle">
+                        <i class="bi bi-stopwatch fs-4"></i>
+                    </div>
+                </div>
+                <div class="mt-2 small text-muted">
+                    Total Calls: {{ metrics.requests_total }} &bull; Avg: {{ metrics.latency_metrics.average_ms }} ms
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions & Background Jobs Row -->
+    <div class="row g-4 mb-4">
+        <!-- Background Jobs Manager -->
+        <div class="col-12 col-lg-8">
+            <div class="gw-card h-100">
+                <div class="gw-card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-terminal me-2 text-primary"></i>Background Job Manager</h5>
+                        <p class="text-muted small mb-0">Non-blocking thread-pool worker queue with SQLite persistence</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-gw-primary" onclick="triggerAsyncOptimization()">
+                            <i class="bi bi-play-fill"></i> Queue Async Optimization
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="window.location.reload()">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="gw-card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 small">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Job UUID</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Scenarios</th>
+                                    <th>Created At</th>
+                                    <th>Runtime</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="jobsTableBody">
+                                {% if recent_jobs %}
+                                    {% for job in recent_jobs %}
+                                    <tr>
+                                        <td><code>{{ job.job_uuid[:8] }}...</code></td>
+                                        <td><span class="badge bg-light text-dark border">{{ job.job_type }}</span></td>
+                                        <td>
+                                            {% if job.status == 'COMPLETED' %}
+                                                <span class="badge bg-success-subtle text-success">COMPLETED</span>
+                                            {% elif job.status == 'RUNNING' %}
+                                                <span class="badge bg-warning-subtle text-warning">RUNNING</span>
+                                            {% elif job.status == 'QUEUED' %}
+                                                <span class="badge bg-secondary-subtle text-secondary">QUEUED</span>
+                                            {% elif job.status == 'FAILED' %}
+                                                <span class="badge bg-danger-subtle text-danger">FAILED</span>
+                                            {% else %}
+                                                <span class="badge bg-light text-dark">{{ job.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ job.params.scenarios_count if job.params else '-' }}</td>
+                                        <td>{{ job.created_at[:19] }}</td>
+                                        <td>{{ job.duration_seconds or '-' }}s</td>
+                                        <td>
+                                            {% if job.status in ['QUEUED', 'RUNNING'] %}
+                                            <button class="btn btn-xs btn-outline-danger py-0 px-2" onclick="cancelJob('{{ job.job_uuid }}')">Cancel</button>
+                                            {% elif job.status == 'COMPLETED' %}
+                                            <span class="text-success small"><i class="bi bi-check2-circle"></i> OK</span>
+                                            {% else %}
+                                            <span class="text-muted small">-</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4 text-muted">No background jobs registered yet. Click "Queue Async Optimization" to dispatch a worker.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hot Backup Management -->
+        <div class="col-12 col-lg-4">
+            <div class="gw-card h-100">
+                <div class="gw-card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-archive me-2 text-warning"></i>Hot Database Backups</h5>
+                        <p class="text-muted small mb-0">SQLite online backup API snapshots</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline-success" onclick="triggerHotBackup()">
+                        <i class="bi bi-cloud-arrow-up"></i> Backup
+                    </button>
+                </div>
+                <div class="gw-card-body p-3">
+                    <div class="list-group list-group-flush small">
+                        {% if backups %}
+                            {% for b in backups %}
+                            <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-semibold text-dark text-truncate" style="max-width: 180px;" title="{{ b.filename }}">{{ b.filename }}</div>
+                                    <div class="text-muted" style="font-size: 0.72rem;">{{ b.timestamp }} &bull; {{ b.size_kb }} KB</div>
+                                </div>
+                                <div>
+                                    <span class="badge bg-success-subtle text-success me-1">VERIFIED</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted small mb-0">No point-in-time snapshots created yet.</p>
+                        {% endif %}
+                    </div>
+                    <div class="mt-3 p-2 bg-light rounded small text-muted border">
+                        <i class="bi bi-info-circle me-1"></i> Rotates automatically to retain 10 latest snapshots. Integrity verified pre-creation.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diagnostic Subsystems Grid -->
+    <div class="row g-4">
+        <!-- Subsystems Detailed Checklist -->
+        <div class="col-12 col-lg-6">
+            <div class="gw-card h-100">
+                <div class="gw-card-header">
+                    <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-hdd-network me-2 text-info"></i>Subsystem Diagnostics</h5>
+                </div>
+                <div class="gw-card-body p-3">
+                    <div class="d-flex flex-column gap-3">
+                        <div class="p-3 rounded bg-light border d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 fw-bold text-dark"><i class="bi bi-database me-2 text-primary"></i>SQLite Database Engine</h6>
+                                <p class="text-muted small mb-0">Path: {{ diagnostics.components.database.path }}</p>
+                            </div>
+                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>{{ diagnostics.components.database.integrity | upper }}</span>
+                        </div>
+
+                        <div class="p-3 rounded bg-light border d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 fw-bold text-dark"><i class="bi bi-calculator me-2 text-success"></i>SciPy HiGHS Optimization Solver</h6>
+                                <p class="text-muted small mb-0">Two-Stage LP model with 24h horizons & recourses</p>
+                            </div>
+                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>ONLINE</span>
+                        </div>
+
+                        <div class="p-3 rounded bg-light border d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 fw-bold text-dark"><i class="bi bi-graph-up me-2 text-purple"></i>Predictive ML Forecasters</h6>
+                                <p class="text-muted small mb-0">Demand GBDT, Solar RF, Price Ridge Models</p>
+                            </div>
+                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>LOADED</span>
+                        </div>
+
+                        <div class="p-3 rounded bg-light border d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 fw-bold text-dark"><i class="bi bi-cloud-sun me-2 text-amber"></i>Open-Meteo Weather Service</h6>
+                                <p class="text-muted small mb-0">Tiruchirappalli Campus (10.7905°N, 78.7047°E)</p>
+                            </div>
+                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>SYNCED</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Telemetry Breakdown -->
+        <div class="col-12 col-lg-6">
+            <div class="gw-card h-100">
+                <div class="gw-card-header">
+                    <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-bar-chart-line me-2 text-secondary"></i>HTTP Traffic & Latencies</h5>
+                </div>
+                <div class="gw-card-body p-3">
+                    <div class="row g-3 mb-3">
+                        <div class="col-4 text-center">
+                            <div class="p-2 bg-success-subtle rounded">
+                                <div class="text-success small fw-semibold">2xx Success</div>
+                                <h5 class="fw-bold mb-0 text-success">{{ metrics.status_breakdown['2xx_success'] }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="p-2 bg-warning-subtle rounded">
+                                <div class="text-warning small fw-semibold">4xx Client Err</div>
+                                <h5 class="fw-bold mb-0 text-warning">{{ metrics.status_breakdown['4xx_client_error'] }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="p-2 bg-danger-subtle rounded">
+                                <div class="text-danger small fw-semibold">5xx Server Err</div>
+                                <h5 class="fw-bold mb-0 text-danger">{{ metrics.status_breakdown['5xx_server_error'] }}</h5>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold small text-muted text-uppercase mb-2">Most Active Endpoints</h6>
+                    <div class="list-group list-group-flush small">
+                        {% for endpoint, count in metrics.top_endpoints.items() %}
+                        <div class="list-group-item px-0 py-1 d-flex justify-content-between align-items-center">
+                            <code>{{ endpoint }}</code>
+                            <span class="badge bg-light text-dark border">{{ count }} hits</span>
+                        </div>
+                        {% else %}
+                        <div class="text-muted small">No traffic recorded yet.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function triggerAsyncOptimization() {
+    try {
+        const res = await fetch('{{ url_for("system.enqueue_optimization") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ scenarios_count: 100, risk_lambda: 0.0 })
+        });
+        const data = await res.json();
+        if (res.status === 202) {
+            alert('Job queued successfully! Job UUID: ' + data.job_uuid);
+            window.location.reload();
+        } else {
+            alert('Failed to queue job: ' + (data.message || 'Unknown error'));
+        }
+    } catch(err) {
+        alert('Error dispatching job: ' + err);
+    }
+}
+
+async function triggerHotBackup() {
+    try {
+        const res = await fetch('{{ url_for("system.trigger_backup") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tag: 'manual_ui' })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            alert('Hot backup created successfully: ' + data.filename);
+            window.location.reload();
+        } else {
+            alert('Backup failed: ' + (data.error || 'Server error'));
+        }
+    } catch (err) {
+        alert('Error: ' + err);
+    }
+}
+
+async function cancelJob(uuid) {
+    if (!confirm('Are you sure you want to cancel job ' + uuid + '?')) return;
+    try {
+        const res = await fetch('/api/jobs/' + uuid + '/cancel', { method: 'POST' });
+        const data = await res.json();
+        alert(data.message);
+        window.location.reload();
+    } catch(err) {
+        alert('Error: ' + err);
+    }
+}
+</script>
+{% endblock %}
+

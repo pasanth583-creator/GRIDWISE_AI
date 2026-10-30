@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+
+{% block title %}Optimization Studio{% endblock %}
+{% block topbar_title %}Stochastic Optimization Studio{% endblock %}
+
+{% block content %}
+<!-- Page Header Banner -->
+<div class="gw-page-banner">
+    <div>
+        <h1 class="gw-page-header-title">
+            <i class="bi bi-cpu text-success"></i> Stochastic Optimization Studio
+        </h1>
+        <p class="gw-page-header-desc">
+            Two-stage stochastic linear optimization of day-ahead energy procurement under demand and solar uncertainty.
+        </p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <span class="gw-badge gw-badge-green"><span class="pulse-indicator"></span> SciPy HiGHS Solver Ready</span>
+        <a href="{{ url_for('reports.model_view') }}" class="btn btn-sm btn-gw-secondary">
+            <i class="bi bi-journal-code"></i> Model Specs
+        </a>
+    </div>
+</div>
+
+<!-- Dataset Provenance Alert -->
+<div class="alert alert-info py-2 px-3 d-flex align-items-center justify-content-between gap-2 mb-4 border shadow-sm" role="alert" style="background-color: #F0FDF4; border-color: #BBF7D0 !important; color: #166534;">
+    <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-shield-check text-success fs-5"></i>
+        <span><strong>OPTIMIZATION ENGINE:</strong> Two-Stage Stochastic Linear Program with Rockafellar-Uryasev Mean-CVaR Risk Governance. <span class="badge bg-white text-success border border-success ms-1">SYNTHETIC SIMULATION DATA – NOT LIVE METER DATA</span></span>
+    </div>
+    <span class="small text-muted d-none d-md-inline">500 Scenarios | SciPy HiGHS Interior-Point</span>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- LEFT SIDE: Optimization Configuration Form -->
+    <div class="col-12 col-xl-5">
+        <div class="gw-card">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-sliders text-success"></i> Microgrid &amp; Solver Configuration
+                </h3>
+                <span class="gw-badge gw-badge-gray">Formulation Settings</span>
+            </div>
+            <div class="gw-card-body">
+                <form id="gw-optimization-form" onsubmit="event.preventDefault();">
+                    <!-- Row 1: Asset Capacities -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label" for="paramSolarCapacity">Solar Capacity (kWp)</label>
+                            <input type="number" class="form-control" id="paramSolarCapacity" value="800" min="100" max="2500" step="10">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label" for="paramBatteryCapacity">Battery Capacity (kWh)</label>
+                            <input type="number" class="form-control" id="paramBatteryCapacity" value="1000" min="200" max="5000" step="50">
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Battery Specs -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label" for="paramBatteryEfficiency">Charging Efficiency (%)</label>
+                            <input type="number" class="form-control" id="paramBatteryEfficiency" value="92" min="70" max="99" step="1">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label" for="paramInitialSoc">Initial Battery SoC (%)</label>
+                            <input type="number" class="form-control" id="paramInitialSoc" value="50" min="15" max="95" step="5">
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Grid Interconnection Limits -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label" for="paramGridLimit">Grid Feeder Limit (kW)</label>
+                            <input type="number" class="form-control" id="paramGridLimit" value="1000" min="100" max="2500" step="50">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label" for="paramExportLimit">Export Limit (kW)</label>
+                            <input type="number" class="form-control" id="paramExportLimit" value="500" min="0" max="1000" step="50">
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Scenarios & Risk Parameter -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <label class="form-label" for="paramScenarios">Number of Scenarios (N)</label>
+                            <input type="number" class="form-control" id="paramScenarios" value="500" min="5" max="500" step="25">
+                            <div class="form-text small text-muted">Phase 3 combined scenarios</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label" for="paramRiskAversion">Risk Parameter (&lambda;: CVaR)</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="range" class="form-range" id="paramRiskAversion" min="0" max="1" step="0.05" value="0.00" oninput="document.getElementById('lambdaVal').innerText = parseFloat(this.value).toFixed(2)">
+                                <span id="lambdaVal" class="fw-bold small text-dark">0.00</span>
+                            </div>
+                            <div class="form-text small text-muted">0.0 = Risk Neutral, 1.0 = Pure CVaR</div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-gw-primary" id="btnRunOptimization" onclick="runStochasticOptimization();">
+                            <i class="bi bi-play-circle-fill"></i> Run Stochastic Optimization
+                        </button>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <button type="button" class="btn btn-gw-secondary w-100" id="btnDeterministicBaseline" onclick="runWithParams(500, 0.0);">
+                                    <i class="bi bi-graph-up"></i> Solve Full (N=500)
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-gw-secondary w-100" id="btnRiskAverse" onclick="runWithParams(500, 0.25);">
+                                    <i class="bi bi-shield-check"></i> Risk-Averse (&lambda;=0.25)
+                                </button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-link text-muted small mt-1" onclick="resetDefaults();">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset Parameters to Default
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Solver Progress Alert -->
+                <div id="solverStatusAlert" class="alert alert-secondary py-2 px-3 mt-3 d-none align-items-center gap-2">
+                    <div class="spinner-border spinner-border-sm text-success" role="status"></div>
+                    <span id="solverStatusText" class="small">Solving Two-Stage LP via SciPy HiGHS...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT SIDE: Optimization Result Preview -->
+    <div class="col-12 col-xl-7">
+        <!-- 6 Results Summary Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-4">
+                <div class="gw-card p-3 h-100">
+                    <span class="text-muted small d-block">Optimization Status</span>
+                    <strong class="text-success" id="resStatus">
+                        <i class="bi bi-check-circle-fill"></i> {{ opt_results.status if opt_results else "OPTIMAL" }}
+                    </strong>
+                    <span class="d-block text-muted" id="resRuntime" style="font-size: 0.75rem;">
+                        Runtime: {{ opt_results.solve_time_seconds if opt_results else "2.53" }}s (HiGHS)
+                    </span>
+                </div>
+            </div>
+            <div class="col-6 col-md-4">
+                <div class="gw-card p-3 h-100">
+                    <span class="text-muted small d-block">Expected Total Cost</span>
+                    <strong class="text-dark fs-5" id="resExpectedCost">
+                        ₹{{ "{:,.2f}".format(opt_results.expected_total_cost_inr) if opt_results else "69,540.75" }}
+                    </strong>
+                    <span class="d-block text-success" id="resSavings" style="font-size: 0.75rem;">
+                        VSS: ₹{{ "{:,.2f}".format(opt_results.vss_inr) if opt_results else "1,140.89" }} ({{ opt_results.vss_savings_pct if opt_results else "1.61" }}%)
+                    </span>
+                </div>
+            </div>
+            <div class="col-6 col-md-4">
+                <div class="gw-card p-3 h-100">
+                    <span class="text-muted small d-block">Deterministic Baseline</span>
+                    <strong class="text-muted fs-5" id="resBaselineCost">
+                        ₹{{ "{:,.2f}".format(opt_results.deterministic_baseline_eev_inr) if opt_results else "70,681.64" }}
+                    </strong>
+                    <span class="d-block text-muted" style="font-size: 0.75rem;">Uncertainty EEV</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-4">
+                <div class="gw-card p-3 h-100">
+                    <span class="text-muted small d-block">Value of Perfect Info (EVPI)</span>
+                    <strong class="text-primary fs-5" id="resEvpi">
+                        ₹{{ "{:,.2f}".format(opt_results.evpi_inr) if opt_results else "1,469.91" }}
+                    </strong>
+                    <span class="d-block text-muted" style="font-size: 0.75rem;">EVPI = RP &minus; WS bound</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-4">
+                <div class="gw-card p-3 h-100">
+                    <span class="text-muted small d-block">Tail Risk (CVaR 95%)</span>
+                    <strong class="text-danger fs-5" id="resCvar">
+                        ₹{{ "{:,.2f}".format(opt_results.risk_metrics.cvar_95_cost_inr) if (opt_results and opt_results.risk_metrics) else "104,400.74" }}
+                    </strong>
+                    <span class="d-block text-muted" style="font-size: 0.75rem;">VaR: ₹{{ "{:,.2f}".format(opt_results.risk_metrics.var_95_cost_inr) if (opt_results and opt_results.risk_metrics) else "101,273.67" }}</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-4">
+                <div class="gw-card p-3 h-100">
+                    <span class="text-muted small d-block">BESS Daily Cycles</span>
+                    <strong class="text-purple fs-5" id="resCycles">
+                        {{ opt_results.battery_daily_cycles if opt_results else "0.86" }} Cycles
+                    </strong>
+                    <span class="d-block text-muted" id="resThroughput" style="font-size: 0.75rem;">
+                        {{ "{:,.1f}".format(opt_results.battery_throughput_kwh) if opt_results else "857.7" }} kWh throughput
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dispatch Schedule Preview Chart -->
+        <div class="gw-card mb-4">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-bar-chart-steps text-success"></i> Optimal 24-Hour Dispatch Plan &amp; SoC Trajectory
+                </h3>
+                <span class="gw-badge gw-badge-green">Primal Solution</span>
+            </div>
+            <div class="gw-card-body">
+                <div id="optimizationSchedulePreviewChart" style="height: 310px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Green: Day-ahead contracted grid procurement (kW) &bull; Purple: Stored battery state of charge (%).</span>
+                <span class="badge bg-light text-muted border">SciPy HiGHS Primal</span>
+            </div>
+        </div>
+
+        <!-- Dispatch Variables Breakdown Table -->
+        <div class="gw-card">
+            <div class="gw-card-header d-flex justify-content-between align-items-center">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-table text-secondary"></i> Schedule Snapshot (24-Hour Dispatch Plan)
+                </h3>
+                <span class="gw-badge gw-badge-gray">24 Hourly Intervals</span>
+            </div>
+            <div class="gw-card-body p-0">
+                <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+                    <table class="table table-sm table-hover align-middle mb-0 text-center" id="scheduleTable">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Hour</th>
+                                <th>DA Contract (kW)</th>
+                                <th>Exp. RT Grid (kW)</th>
+                                <th>BESS Charge (kW)</th>
+                                <th>BESS Discharge (kW)</th>
+                                <th>Planned SoC (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scheduleTableBody">
+                            {% if opt_results and opt_results.hourly_schedule %}
+                                {% for row in opt_results.hourly_schedule %}
+                                <tr>
+                                    <td><strong>{{ "%02d:00"|format(row.hour) }}</strong></td>
+                                    <td>{{ "{:,.1f}".format(row.day_ahead_procurement_kw) }}</td>
+                                    <td>{{ "{:,.1f}".format(row.expected_real_time_kw) }}</td>
+                                    <td class="text-success">{{ "+{:,.1f}".format(row.expected_battery_charge_kw) if row.expected_battery_charge_kw > 0.01 else "—" }}</td>
+                                    <td class="text-purple">{{ "-{:,.1f}".format(row.expected_battery_discharge_kw) if row.expected_battery_discharge_kw > 0.01 else "—" }}</td>
+                                    <td>{{ "{:.1f}%".format(row.expected_battery_soc_pct) }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr><td colspan="6" class="text-muted py-3">Click 'Run Stochastic Optimization' to compute 24-hour plan.</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function runStochasticOptimization() {
+    const btn = document.getElementById('btnRunOptimization');
+    const alertBox = document.getElementById('solverStatusAlert');
+    const alertText = document.getElementById('solverStatusText');
+
+    const numScenarios = parseInt(document.getElementById('paramScenarios').value) || 500;
+    const riskLambda = parseFloat(document.getElementById('paramRiskAversion').value) || 0.0;
+    const bessCap = parseFloat(document.getElementById('paramBatteryCapacity').value) || 1000.0;
+    const initialSoc = (parseFloat(document.getElementById('paramInitialSoc').value) || 50.0) / 100.0;
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Optimizing (HiGHS)...';
+    alertBox.classList.remove('d-none');
+    alertBox.className = 'alert alert-info py-2 px-3 mt-3 d-flex align-items-center gap-2';
+    alertText.innerText = `Solving Two-Stage Stochastic LP (N = ${numScenarios}, λ = ${riskLambda.toFixed(2)})...`;
+
+    try {
+        const resp = await fetch('/api/optimization/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                num_scenarios: numScenarios,
+                risk_aversion: riskLambda,
+                battery_capacity_kwh: bessCap,
+                initial_soc_pct: initialSoc
+            })
+        });
+
+        const data = await resp.json();
+        if (!resp.ok || !data.success) {
+            throw new Error(data.message || data.error || 'Optimization solver failed');
+        }
+
+        const res = data.results;
+        alertBox.className = 'alert alert-success py-2 px-3 mt-3 d-flex align-items-center gap-2';
+        alertText.innerText = `Optimization Solved to Optimality in ${res.solve_time_seconds}s!`;
+
+        // Update UI Summary Elements
+        document.getElementById('resStatus').innerHTML = '<i class="bi bi-check-circle-fill"></i> OPTIMAL';
+        document.getElementById('resRuntime').innerText = `Runtime: ${res.solve_time_seconds}s (HiGHS)`;
+        document.getElementById('resExpectedCost').innerText = `₹${res.expected_total_cost_inr.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        document.getElementById('resSavings').innerText = `VSS: ₹${res.vss_inr.toLocaleString('en-IN', {minimumFractionDigits: 2})} (${res.vss_savings_pct}%)`;
+        document.getElementById('resBaselineCost').innerText = `₹${res.deterministic_baseline_eev_inr.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        document.getElementById('resEvpi').innerText = `₹${res.evpi_inr.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        
+        if (res.risk_metrics) {
+            document.getElementById('resCvar').innerText = `₹${res.risk_metrics.cvar_95_cost_inr.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
+        document.getElementById('resCycles').innerText = `${res.battery_daily_cycles} Cycles`;
+        document.getElementById('resThroughput').innerText = `${res.battery_throughput_kwh.toLocaleString('en-IN', {maximumFractionDigits: 1})} kWh throughput`;
+
+        // Update Table
+        if (res.hourly_schedule && Array.isArray(res.hourly_schedule)) {
+            const tbody = document.getElementById('scheduleTableBody');
+            tbody.innerHTML = '';
+            res.hourly_schedule.forEach(row => {
+                const tr = document.createElement('tr');
+                const hStr = String(row.hour).padStart(2, '0') + ':00';
+                const ch = row.expected_battery_charge_kw > 0.01 ? `+${row.expected_battery_charge_kw.toFixed(1)}` : '—';
+                const dis = row.expected_battery_discharge_kw > 0.01 ? `-${row.expected_battery_discharge_kw.toFixed(1)}` : '—';
+                tr.innerHTML = `
+                    <td><strong>${hStr}</strong></td>
+                    <td>${row.day_ahead_procurement_kw.toFixed(1)}</td>
+                    <td>${row.expected_real_time_kw.toFixed(1)}</td>
+                    <td class="text-success">${ch}</td>
+                    <td class="text-purple">${dis}</td>
+                    <td>${row.expected_battery_soc_pct.toFixed(1)}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Re-render Plotly chart with dynamic data
+            if (window.GridWiseCharts) {
+                GridWiseCharts.renderOptimizationSchedulePreview('optimizationSchedulePreviewChart', res.hourly_schedule);
+            }
+        }
+
+    } catch (err) {
+        alertBox.className = 'alert alert-danger py-2 px-3 mt-3 d-flex align-items-center gap-2';
+        alertText.innerText = `Error: ${err.message}`;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-play-circle-fill"></i> Run Stochastic Optimization';
+    }
+}
+
+function runWithParams(n, lambda) {
+    document.getElementById('paramScenarios').value = n;
+    document.getElementById('paramRiskAversion').value = lambda;
+    document.getElementById('lambdaVal').innerText = parseFloat(lambda).toFixed(2);
+    runStochasticOptimization();
+}
+
+function resetDefaults() {
+    document.getElementById('paramSolarCapacity').value = '800';
+    document.getElementById('paramBatteryCapacity').value = '1000';
+    document.getElementById('paramBatteryEfficiency').value = '92';
+    document.getElementById('paramInitialSoc').value = '50';
+    document.getElementById('paramGridLimit').value = '1000';
+    document.getElementById('paramExportLimit').value = '500';
+    document.getElementById('paramScenarios').value = '500';
+    document.getElementById('paramRiskAversion').value = '0.00';
+    document.getElementById('lambdaVal').innerText = '0.00';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.GridWiseCharts) {
+        GridWiseCharts.renderOptimizationSchedulePreview('optimizationSchedulePreviewChart');
+    }
+});
+</script>
+{% endblock %}

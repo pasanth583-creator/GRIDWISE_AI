@@ -1,0 +1,610 @@
+{% extends "base.html" %}
+
+{% block title %}Live Energy Intelligence & Adaptive Optimization | GRIDWISE AI{% endblock %}
+{% block topbar_title %}Live Energy Intelligence & Adaptive Dispatch{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+
+    <!-- Live Weather Status & Location Banner -->
+    <div class="card border shadow-sm mb-4" style="border-left: 4px solid #0284C7 !important;">
+        <div class="card-body py-3 px-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-primary-subtle text-primary p-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
+                    <i class="bi bi-cloud-sun-fill fs-3"></i>
+                </div>
+                <div>
+                    <div class="d-flex align-items-center gap-2">
+                        <h5 class="fw-bold mb-0 text-dark">{{ weather.location_name }}</h5>
+                        <span class="badge {% if weather.is_cached %}bg-info-subtle text-info border border-info-subtle{% else %}bg-success-subtle text-success border border-success-subtle{% endif %}">
+                            {{ weather.source }}
+                        </span>
+                        {% if weather.is_stale %}
+                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                            FALLBACK CACHE
+                        </span>
+                        {% endif %}
+                    </div>
+                    <small class="text-muted">
+                        Coordinates: {{ "%.4f"|format(weather.latitude) }}°N, {{ "%.4f"|format(weather.longitude) }}°E |
+                        Last Synced: <span id="lblWeatherFetchedAt" class="fw-semibold text-dark">{{ weather.fetched_at[:19].replace('T', ' ') if weather.fetched_at else 'Just now' }} UTC</span>
+                        <span class="text-muted">(15-min auto-cache)</span>
+                    </small>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex flex-wrap gap-2">
+                <button id="btnRefreshWeather" class="btn btn-outline-primary btn-sm shadow-sm">
+                    <i class="bi bi-arrow-repeat me-1"></i> Refresh Live Weather
+                </button>
+                <button id="btnRunAdaptiveOptimization" class="btn btn-success btn-sm shadow-sm" style="background-color: #16A34A; border-color: #16A34A;">
+                    <i class="bi bi-lightning-charge-fill me-1"></i> Run Adaptive Optimization
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Weather Current Condition Cards -->
+    <div class="row g-3 mb-4">
+        <!-- Temperature Card -->
+        <div class="col-6 col-md-3">
+            <div class="card border shadow-sm h-100">
+                <div class="card-body p-3">
+                    <span class="text-uppercase fw-semibold text-muted small">Current Temp</span>
+                    <div class="h3 fw-bold text-dark my-1" id="kpiCurrTemp">
+                        {{ weather.current.temperature_c }} <small class="fs-6 fw-normal text-muted">°C</small>
+                    </div>
+                    <div class="small text-muted">
+                        Humidity: <strong>{{ weather.current.relative_humidity_pct }}%</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Solar Irradiance Card -->
+        <div class="col-6 col-md-3">
+            <div class="card border shadow-sm h-100">
+                <div class="card-body p-3">
+                    <span class="text-uppercase fw-semibold text-muted small">Cloud Cover & GHI</span>
+                    <div class="h3 fw-bold text-dark my-1" id="kpiCurrCloud">
+                        {{ weather.current.cloud_cover_pct }}% <small class="fs-6 fw-normal text-muted">Cloud</small>
+                    </div>
+                    <div class="small text-muted">
+                        Wind: <strong>{{ weather.current.wind_speed_kmh }} km/h</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Adaptive Expected Cost Card -->
+        <div class="col-6 col-md-3">
+            <div class="card border shadow-sm h-100">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-uppercase fw-semibold text-muted small">Adaptive Expected Cost</span>
+                        {% if latest_opt and latest_opt.comparison.cost_delta_inr != 0 %}
+                            <span class="badge {% if latest_opt.comparison.cost_delta_inr < 0 %}bg-success-subtle text-success{% else %}bg-danger-subtle text-danger{% endif %}">
+                                {{ "%+.2f"|format(latest_opt.comparison.cost_delta_inr) }} INR
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="h3 fw-bold text-dark my-1" id="kpiAdaptiveCost">
+                        ₹{{ "{:,.2f}".format(latest_opt.expected_cost_inr) if latest_opt else '48,021.86' }}
+                    </div>
+                    <div class="small text-muted">
+                        VSS: <strong class="text-success">₹{{ "{:,.2f}".format(latest_opt.vss_inr) if latest_opt else '297.29' }} ({{ latest_opt.vss_pct if latest_opt else '0.6' }}%)</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tail Risk CVaR Card -->
+        <div class="col-6 col-md-3">
+            <div class="card border shadow-sm h-100">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-uppercase fw-semibold text-muted small">Tail Risk (CVaR 95%)</span>
+                        <span class="badge bg-warning-subtle text-warning-emphasis">HiGHS LP</span>
+                    </div>
+                    <div class="h3 fw-bold text-dark my-1" id="kpiAdaptiveCvar">
+                        ₹{{ "{:,.2f}".format(latest_opt.cvar_95_inr) if latest_opt else '58,046.35' }}
+                    </div>
+                    <div class="small text-muted">
+                        VaR 95%: <strong>₹{{ "{:,.2f}".format(latest_opt.var_95_inr) if latest_opt else '56,118.50' }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Intelligent Alerts Section -->
+    {% if alerts %}
+    <div class="card border shadow-sm mb-4">
+        <div class="card-header bg-white py-2 px-3 border-bottom d-flex justify-content-between align-items-center">
+            <div class="fw-bold text-dark small"><i class="bi bi-bell-fill text-warning me-1"></i> Active Real-Time Energy & Risk Alerts ({{ alerts|length }})</div>
+            <span class="badge bg-light text-muted border">Automatic Threshold Detection</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+                {% for alt in alerts %}
+                <div class="list-group-item p-3 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+                    <div class="d-flex align-items-start gap-3">
+                        <span class="badge mt-1 {% if alt.severity == 'CRITICAL' %}bg-danger{% elif alt.severity == 'WARNING' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">
+                            {{ alt.severity }}
+                        </span>
+                        <div>
+                            <div class="fw-bold text-dark">{{ alt.category }}: <span class="fw-normal text-muted">{{ alt.explanation }}</span></div>
+                            <div class="small text-success mt-1"><i class="bi bi-check-circle me-1"></i><strong>Action:</strong> {{ alt.recommended_action }}</div>
+                        </div>
+                    </div>
+                    <small class="text-muted text-nowrap">{{ alt.created_at[:19].replace('T', ' ') if alt.created_at else '' }}</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Adaptive Optimization Configuration Form -->
+    <div class="card border shadow-sm mb-4">
+        <div class="card-header bg-white py-2 px-3 border-bottom d-flex justify-content-between align-items-center">
+            <div class="fw-semibold text-dark small"><i class="bi bi-sliders me-1 text-success"></i> Adaptive Stochastic Dispatch Solver Configuration</div>
+            <span class="badge bg-light text-muted border">Two-Stage LP with Recourse</span>
+        </div>
+        <div class="card-body p-3">
+            <form id="adaptiveOptForm" class="row g-3 align-items-end">
+                <div class="col-12 col-md-3">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Adaptive Scenarios (N ≥ 100)</label>
+                    <select class="form-select form-select-sm" id="optNumScenarios">
+                        <option value="100" selected>100 Scenarios (Recommended Fidelity)</option>
+                        <option value="150">150 Scenarios (Deep Uncertainty)</option>
+                        <option value="50">50 Scenarios (Quick Test)</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Risk Weight (λ CVaR)</label>
+                    <select class="form-select form-select-sm" id="optRiskLambda">
+                        <option value="0.0" selected>λ = 0.0 (Risk-Neutral)</option>
+                        <option value="0.2">λ = 0.2 (Balanced Hedged)</option>
+                        <option value="0.5">λ = 0.5 (Conservative Tail Risk)</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Battery Storage Capacity</label>
+                    <div class="input-group input-group-sm">
+                        <input type="number" class="form-control" id="optBatteryCap" value="1000" min="200" max="2500" step="100">
+                        <span class="input-group-text">kWh</span>
+                    </div>
+                </div>
+                <div class="col-12 col-md-3">
+                    <button type="submit" class="btn btn-success btn-sm w-100" style="background-color: #16A34A; border-color: #16A34A;">
+                        <i class="bi bi-cpu-fill me-1"></i> Solve Adaptive Dispatch
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Charts Row 1: Live Weather 24h & Adaptive Solar Output -->
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-lg-6">
+            <div class="card border shadow-sm h-100">
+                <div class="card-header bg-white py-3 px-3 border-bottom d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">24-Hour Live Weather Forecast (Open-Meteo)</h6>
+                        <small class="text-muted">Hourly temperature (°C) & solar irradiance (W/m²)</small>
+                    </div>
+                    <span class="badge bg-light text-dark border">Tiruchirappalli</span>
+                </div>
+                <div class="card-body p-2">
+                    <div id="chartLiveWeather" style="height: 330px; width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+            <div class="card border shadow-sm h-100">
+                <div class="card-header bg-white py-3 px-3 border-bottom d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Physics-Based Solar PV Forecast vs Night Invariant</h6>
+                        <small class="text-muted">Weather-derated generation (kW) with 0 kW strictly at night</small>
+                    </div>
+                    <span class="badge bg-light text-dark border">800 kWp PV</span>
+                </div>
+                <div class="card-body p-2">
+                    <div id="chartAdaptiveSolar" style="height: 330px; width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2: Weather-Sensitive Demand & Adaptive Grid Dispatch -->
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-lg-6">
+            <div class="card border shadow-sm h-100">
+                <div class="card-header bg-white py-3 px-3 border-bottom d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Weather-Adjusted Campus Demand & Tariffs</h6>
+                        <small class="text-muted">HVAC thermal load response & Day-Ahead vs Spot prices</small>
+                    </div>
+                    <span class="badge bg-light text-dark border">Dual Axis</span>
+                </div>
+                <div class="card-body p-2">
+                    <div id="chartAdaptiveDemand" style="height: 330px; width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+            <div class="card border shadow-sm h-100">
+                <div class="card-header bg-white py-3 px-3 border-bottom d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Adaptive Day-Ahead Commitment & Battery SOC</h6>
+                        <small class="text-muted">Optimal common purchase schedule x[t] & storage trajectory</small>
+                    </div>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">Optimal Schedule</span>
+                </div>
+                <div class="card-body p-2">
+                    <div id="chartAdaptiveSchedule" style="height: 330px; width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Adaptive Optimization History & Previous-Run Comparison Table -->
+    <div class="card border shadow-sm mb-4">
+        <div class="card-header bg-white py-3 px-3 border-bottom d-flex justify-content-between align-items-center">
+            <div>
+                <h6 class="fw-bold mb-0 text-dark">Adaptive Optimization History & Previous-Run Deltas</h6>
+                <small class="text-muted">Tracking cost shifts, CVaR evolution, and solver performance across live runs</small>
+            </div>
+            <span class="badge bg-light text-muted border">SQLite Run Registry</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 small">
+                <thead class="table-light text-muted text-uppercase" style="font-size: 0.75rem;">
+                    <tr>
+                        <th class="ps-3">Run ID</th>
+                        <th>Run Name</th>
+                        <th>Scenarios</th>
+                        <th>Expected Cost</th>
+                        <th>Cost Delta vs Prev</th>
+                        <th>CVaR (95%)</th>
+                        <th>VSS Savings</th>
+                        <th>Status</th>
+                        <th>Runtime</th>
+                        <th>Recorded At</th>
+                    </tr>
+                </thead>
+                <tbody id="tblAdaptiveHistoryBody">
+                    {% for h in history %}
+                    <tr>
+                        <td class="ps-3"><code>{{ h.run_uuid }}</code></td>
+                        <td>{{ h.run_name }}</td>
+                        <td>{{ h.num_scenarios }}</td>
+                        <td><strong>₹{{ "{:,.2f}".format(h.expected_cost_inr) }}</strong></td>
+                        <td>
+                            {% if h.cost_delta_inr > 0 %}
+                                <span class="text-danger fw-semibold">+₹{{ "{:,.2f}".format(h.cost_delta_inr) }}</span>
+                            {% elif h.cost_delta_inr < 0 %}
+                                <span class="text-success fw-semibold">-₹{{ "{:,.2f}".format(h.cost_delta_inr|abs) }}</span>
+                            {% else %}
+                                <span class="text-muted">0.00</span>
+                            {% endif %}
+                        </td>
+                        <td>₹{{ "{:,.2f}".format(h.cvar_95_inr) }}</td>
+                        <td><span class="text-success">₹{{ "{:,.2f}".format(h.vss_inr) }} ({{ h.vss_pct }}%)</span></td>
+                        <td><span class="badge bg-success">{{ h.solver_status }}</span></td>
+                        <td>{{ h.solve_time_sec }}s</td>
+                        <td class="text-muted">{{ h.created_at[:19].replace('T', ' ') if h.created_at else '' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="10" class="text-center py-3 text-muted">
+                            No adaptive runs logged yet. Click "Run Adaptive Optimization" to execute first run.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    loadAllAdaptiveCharts();
+
+    // Weather refresh button handler
+    const btnRefresh = document.getElementById("btnRefreshWeather");
+    if (btnRefresh) {
+        btnRefresh.addEventListener("click", function() {
+            btnRefresh.disabled = true;
+            btnRefresh.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Fetching Open-Meteo...';
+            fetch("/api/weather/refresh", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"}
+            })
+            .then(res => res.json())
+            .then(data => {
+                btnRefresh.disabled = false;
+                btnRefresh.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Refresh Live Weather';
+                if (data.success) {
+                    alert("Live weather successfully updated from Open-Meteo API!");
+                    location.reload();
+                } else {
+                    alert("Weather refresh note: " + (data.error || "Updated using fallback cache"));
+                    location.reload();
+                }
+            })
+            .catch(err => {
+                btnRefresh.disabled = false;
+                btnRefresh.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Refresh Live Weather';
+                alert("Network error: " + err);
+            });
+        });
+    }
+
+    // Adaptive Optimization Form handler
+    const formAdaptive = document.getElementById("adaptiveOptForm");
+    const btnRunAdaptive = document.getElementById("btnRunAdaptiveOptimization");
+
+    function executeAdaptiveOptimization() {
+        const numScen = parseInt(document.getElementById("optNumScenarios").value, 10);
+        const riskLambda = parseFloat(document.getElementById("optRiskLambda").value);
+        const battCap = parseFloat(document.getElementById("optBatteryCap").value);
+
+        if (btnRunAdaptive) {
+            btnRunAdaptive.disabled = true;
+            btnRunAdaptive.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Solving Adaptive LP...';
+        }
+
+        fetch("/api/adaptive/optimize", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                num_scenarios: numScen,
+                risk_aversion: riskLambda,
+                battery_capacity_kwh: battCap,
+                force_weather_refresh: false
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (btnRunAdaptive) {
+                btnRunAdaptive.disabled = false;
+                btnRunAdaptive.innerHTML = '<i class="bi bi-lightning-charge-fill me-1"></i> Run Adaptive Optimization';
+            }
+            if (data.success) {
+                alert("Adaptive stochastic optimization solved successfully for " + numScen + " scenarios! Expected Cost: ₹" + data.data.expected_cost_inr.toFixed(2));
+                location.reload();
+            } else {
+                alert("Optimization error: " + (data.error || "Unknown error"));
+            }
+        })
+        .catch(err => {
+            if (btnRunAdaptive) {
+                btnRunAdaptive.disabled = false;
+                btnRunAdaptive.innerHTML = '<i class="bi bi-lightning-charge-fill me-1"></i> Run Adaptive Optimization';
+            }
+            alert("Error: " + err);
+        });
+    }
+
+    if (formAdaptive) {
+        formAdaptive.addEventListener("submit", function(e) {
+            e.preventDefault();
+            executeAdaptiveOptimization();
+        });
+    }
+
+    if (btnRunAdaptive) {
+        btnRunAdaptive.addEventListener("click", function() {
+            executeAdaptiveOptimization();
+        });
+    }
+});
+
+function loadAllAdaptiveCharts() {
+    // 1. Weather Chart
+    fetch("/api/live-weather")
+        .then(r => r.json())
+        .then(res => {
+            if (res.success && res.data.hourly_24h) {
+                renderLiveWeatherChart(res.data.hourly_24h);
+            }
+        });
+
+    // 2. Adaptive Forecasts (Solar & Demand)
+    fetch("/api/adaptive/forecast")
+        .then(r => r.json())
+        .then(res => {
+            if (res.success && res.data) {
+                renderAdaptiveSolarChart(res.data.solar_forecast);
+                renderAdaptiveDemandChart(res.data.demand_forecast, res.data.price_forecast);
+            }
+        });
+
+    // 3. Adaptive Dispatch Schedule
+    fetch("/api/adaptive/results/latest")
+        .then(r => r.json())
+        .then(res => {
+            if (res.success && res.data && res.data.hourly_schedule) {
+                renderAdaptiveScheduleChart(res.data.hourly_schedule);
+            }
+        });
+}
+
+function renderLiveWeatherChart(data) {
+    const hours = data.map(d => "H" + String(d.hour).padStart(2, '0'));
+    const temps = data.map(d => d.temperature_c);
+    const rads = data.map(d => d.solar_radiation_w_m2);
+
+    const traceTemp = {
+        x: hours,
+        y: temps,
+        name: 'Temperature (°C)',
+        type: 'scatter',
+        mode: 'lines+markers',
+        line: { color: '#EF4444', width: 2 },
+        marker: { size: 5, color: '#EF4444' }
+    };
+
+    const traceRad = {
+        x: hours,
+        y: rads,
+        name: 'Solar Radiation (W/m²)',
+        type: 'bar',
+        yaxis: 'y2',
+        marker: { color: 'rgba(245, 158, 11, 0.4)', line: { color: '#F59E0B', width: 1.5 } }
+    };
+
+    const layout = {
+        margin: { t: 20, r: 45, l: 40, b: 40 },
+        paper_bgcolor: '#FFFFFF',
+        plot_bgcolor: '#FFFFFF',
+        xaxis: { title: 'Hour of Day', gridcolor: '#F1F5F9' },
+        yaxis: { title: 'Temperature (°C)', gridcolor: '#F1F5F9', range: [20, 42] },
+        yaxis2: {
+            title: 'Irradiance (W/m²)',
+            overlaying: 'y',
+            side: 'right',
+            gridcolor: 'transparent',
+            range: [0, 1100]
+        },
+        legend: { orientation: 'h', y: -0.25, x: 0.1 }
+    };
+
+    Plotly.newPlot('chartLiveWeather', [traceRad, traceTemp], layout, {responsive: true, displayModeBar: false});
+}
+
+function renderAdaptiveSolarChart(data) {
+    if (!data) return;
+    const hours = data.map(d => "H" + String(d.hour).padStart(2, '0'));
+    const solarKw = data.map(d => d.adaptive_solar_kwh);
+
+    const traceSolar = {
+        x: hours,
+        y: solarKw,
+        name: 'Weather-Derated PV (kW)',
+        type: 'scatter',
+        mode: 'lines+markers',
+        fill: 'tozeroy',
+        fillcolor: 'rgba(22, 163, 74, 0.15)',
+        line: { color: '#16A34A', width: 2.5 },
+        marker: { size: 6, color: '#16A34A' }
+    };
+
+    const layout = {
+        margin: { t: 20, r: 20, l: 45, b: 40 },
+        paper_bgcolor: '#FFFFFF',
+        plot_bgcolor: '#FFFFFF',
+        xaxis: { title: 'Hour of Day', gridcolor: '#F1F5F9' },
+        yaxis: { title: 'Solar Output (kW)', gridcolor: '#F1F5F9', range: [0, 850] },
+        legend: { orientation: 'h', y: -0.25, x: 0.1 }
+    };
+
+    Plotly.newPlot('chartAdaptiveSolar', [traceSolar], layout, {responsive: true, displayModeBar: false});
+}
+
+function renderAdaptiveDemandChart(demandData, priceData) {
+    if (!demandData || !priceData) return;
+    const hours = demandData.map(d => "H" + String(d.hour).padStart(2, '0'));
+    const demandKw = demandData.map(d => d.adaptive_demand_kwh);
+    const daPrice = priceData.map(d => d.day_ahead_price_inr_kwh);
+
+    const traceDemand = {
+        x: hours,
+        y: demandKw,
+        name: 'Adaptive Demand (kWh)',
+        type: 'scatter',
+        mode: 'lines+markers',
+        line: { color: '#0284C7', width: 2.5 },
+        marker: { size: 5, color: '#0284C7' }
+    };
+
+    const tracePrice = {
+        x: hours,
+        y: daPrice,
+        name: 'Day-Ahead Tariff (₹/kWh)',
+        type: 'scatter',
+        mode: 'lines',
+        yaxis: 'y2',
+        line: { color: '#DC2626', width: 2, shape: 'hv', dash: 'dash' }
+    };
+
+    const layout = {
+        margin: { t: 20, r: 45, l: 45, b: 40 },
+        paper_bgcolor: '#FFFFFF',
+        plot_bgcolor: '#FFFFFF',
+        xaxis: { title: 'Hour of Day', gridcolor: '#F1F5F9' },
+        yaxis: { title: 'Campus Demand (kWh)', gridcolor: '#F1F5F9' },
+        yaxis2: {
+            title: 'Tariff (₹/kWh)',
+            overlaying: 'y',
+            side: 'right',
+            gridcolor: 'transparent',
+            range: [0, 15]
+        },
+        legend: { orientation: 'h', y: -0.25, x: 0.1 }
+    };
+
+    Plotly.newPlot('chartAdaptiveDemand', [traceDemand, tracePrice], layout, {responsive: true, displayModeBar: false});
+}
+
+function renderAdaptiveScheduleChart(sched) {
+    if (!sched || !sched.day_ahead_procurement_kw) return;
+    const hours = Array.from({length: 24}, (_, i) => "H" + String(i).padStart(2, '0'));
+
+    const traceDA = {
+        x: hours,
+        y: sched.day_ahead_procurement_kw,
+        name: 'Day-Ahead Grid x[t] (kW)',
+        type: 'bar',
+        marker: { color: '#16A34A' }
+    };
+
+    const traceRT = {
+        x: hours,
+        y: sched.expected_real_time_kw,
+        name: 'Exp Real-Time Recourse g[t]',
+        type: 'bar',
+        marker: { color: '#F97316' }
+    };
+
+    const traceSOC = {
+        x: hours,
+        y: sched.expected_soc_kwh,
+        name: 'Battery Energy (kWh)',
+        type: 'scatter',
+        mode: 'lines',
+        yaxis: 'y2',
+        line: { color: '#8B5CF6', width: 2.5 }
+    };
+
+    const layout = {
+        barmode: 'stack',
+        margin: { t: 20, r: 45, l: 45, b: 40 },
+        paper_bgcolor: '#FFFFFF',
+        plot_bgcolor: '#FFFFFF',
+        xaxis: { title: 'Hour of Day', gridcolor: '#F1F5F9' },
+        yaxis: { title: 'Grid Procurement (kW)', gridcolor: '#F1F5F9' },
+        yaxis2: {
+            title: 'Battery SOC (kWh)',
+            overlaying: 'y',
+            side: 'right',
+            gridcolor: 'transparent',
+            range: [0, 1100]
+        },
+        legend: { orientation: 'h', y: -0.28, x: 0.05 }
+    };
+
+    Plotly.newPlot('chartAdaptiveSchedule', [traceDA, traceRT, traceSOC], layout, {responsive: true, displayModeBar: false});
+}
+</script>
+{% endblock %}
+

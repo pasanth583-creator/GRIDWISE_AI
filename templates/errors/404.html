@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found{% endblock %}
+{% block topbar_title %}404 &mdash; Resource Not Found{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-12 col-md-8 col-lg-6 text-center">
+        <div class="gw-card p-5">
+            <div class="mb-3" style="color: var(--gw-amber);">
+                <i class="bi bi-compass" style="font-size: 3.5rem;"></i>
+            </div>
+            <h2 class="h3 fw-bold text-dark mb-2">404 - Page Not Found</h2>
+            <p class="text-muted mb-4 small">
+                The requested URL does not match any operational route in the GRIDWISE AI microgrid platform.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ url_for('dashboard.dashboard_view') }}" class="btn btn-gw-primary">
+                    <i class="bi bi-speedometer2"></i> Overview Dashboard
+                </a>
+                <a href="{{ url_for('main.health_check') }}" class="btn btn-gw-secondary" target="_blank">
+                    <i class="bi bi-heart-pulse"></i> Health Status
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

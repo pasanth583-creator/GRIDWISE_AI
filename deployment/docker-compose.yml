@@ -1,0 +1,55 @@
+# ==============================================================================
+# GRIDWISE AI - Docker Compose Orchestration
+# ==============================================================================
+
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    container_name: gridwise_app
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      - GUNICORN_WORKERS=4
+    volumes:
+      - db_data:/app/database
+      - log_data:/app/logs
+      - backup_data:/app/backups
+      - result_data:/app/data/results
+      - report_data:/app/reports
+    networks:
+      - gridwise_net
+    expose:
+      - "5000"
+
+  nginx:
+    image: nginx:alpine
+    container_name: gridwise_proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../static:/app/static:ro
+    depends_on:
+      - app
+    networks:
+      - gridwise_net
+
+networks:
+  gridwise_net:
+    driver: bridge
+
+volumes:
+  db_data:
+  log_data:
+  backup_data:
+  result_data:
+  report_data:
+

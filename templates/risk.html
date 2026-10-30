@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}Risk Management{% endblock %}
+{% block topbar_title %}Risk Management{% endblock %}
+
+{% block content %}
+<!-- Page Header Banner -->
+<div class="gw-page-banner">
+    <div>
+        <h1 class="gw-page-header-title">
+            <i class="bi bi-shield-shaded text-danger"></i> Risk &amp; Uncertainty Management
+        </h1>
+        <p class="gw-page-header-desc">
+            Tail-risk mitigation via Rockafellar-Uryasev Conditional Value-at-Risk (CVaR) convex reformulation.
+        </p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <span class="gw-badge gw-badge-amber">Confidence Level: α = 95%</span>
+        <a href="{{ url_for('reports.model_view') }}" class="btn btn-sm btn-gw-secondary">
+            <i class="bi bi-code-slash"></i> CVaR Formulations
+        </a>
+    </div>
+</div>
+
+<!-- Dataset Notice Banner -->
+<div class="alert alert-info py-2 px-3 d-flex align-items-center justify-content-between gap-2 mb-4 border shadow-sm" role="alert" style="background-color: #F0FDF4; border-color: #BBF7D0 !important; color: #166534;">
+    <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-shield-check text-success fs-5"></i>
+        <span><strong>RISK GOVERNANCE:</strong> Rockafellar-Uryasev Mean-CVaR Linearization at &alpha; = 95% Confidence. <span class="badge bg-white text-success border border-success ms-1">SYNTHETIC SIMULATION DATA – NOT LIVE METER DATA</span></span>
+    </div>
+    <span class="small text-muted d-none d-md-inline">500 Uncertainty Scenarios Evaluated</span>
+</div>
+
+<!-- 4 KPI Cards Row -->
+<div class="row g-3 mb-4">
+    <!-- 1. Expected Cost -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Expected Cost E[Cost]</span>
+                <div class="gw-kpi-icon green">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value">₹{{ "{:,.2f}".format(opt_results.expected_total_cost_inr) if opt_results else "69,540.75" }}</span>
+                </div>
+                <p class="gw-kpi-desc">Probability-weighted average (RP)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Standard Deviation -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Standard Deviation (&sigma;)</span>
+                <div class="gw-kpi-icon blue">
+                    <i class="bi bi-activity"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value">&plusmn;₹{{ "{:,.2f}".format(opt_results.risk_metrics.std_scenario_cost_inr) if (opt_results and opt_results.risk_metrics) else "17,302.32" }}</span>
+                </div>
+                <p class="gw-kpi-desc">Dispersion across 500 scenarios</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Value at Risk (VaR) -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Value at Risk (VaR 95%)</span>
+                <div class="gw-kpi-icon amber">
+                    <i class="bi bi-shield-exclamation"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value">₹{{ "{:,.2f}".format(opt_results.risk_metrics.var_95_cost_inr) if (opt_results and opt_results.risk_metrics) else "101,273.67" }}</span>
+                </div>
+                <p class="gw-kpi-desc">95th percentile cost threshold</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Conditional Value at Risk (CVaR) -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Conditional VaR (CVaR 95%)</span>
+                <div class="gw-kpi-icon red" style="background-color: var(--gw-danger-light); color: var(--gw-danger);">
+                    <i class="bi bi-shield-x"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value">₹{{ "{:,.2f}".format(opt_results.risk_metrics.cvar_95_cost_inr) if (opt_results and opt_results.risk_metrics) else "104,400.74" }}</span>
+                </div>
+                <p class="gw-kpi-desc">Expected cost in worst 5% cases</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3 Charts Grid -->
+<div class="row g-4 mb-4">
+    <!-- Chart 1: Scenario Cost Distribution -->
+    <div class="col-12 col-lg-7">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-bar-chart-steps text-primary"></i> Scenario Procurement Cost Distribution &amp; Tail Risk
+                </h3>
+                <span class="gw-badge gw-badge-blue">50 Realizations</span>
+            </div>
+            <div class="gw-card-body">
+                <div id="riskCostDistributionChart" style="height: 310px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Distribution of day-ahead expenses with VaR (95%) and CVaR (95%) cutoff boundaries.</span>
+                <span class="badge bg-light text-muted border">Sample Profile</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 2: VaR vs CVaR Comparison Across Alphas -->
+    <div class="col-12 col-lg-5">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-shield-lock text-danger"></i> VaR vs. CVaR Across Confidence (α)
+                </h3>
+                <span class="gw-badge gw-badge-amber">Tail Comparison</span>
+            </div>
+            <div class="gw-card-body">
+                <div id="riskVarCvarComparisonChart" style="height: 310px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Tail loss bounds at 90%, 95%, and 99% regulatory confidence intervals.</span>
+                <span class="badge bg-light text-muted border">Sample Profile</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive Risk-Aversion Slider & Frontier Analysis Row -->
+<div class="row g-4 mb-4">
+    <!-- Pareto Efficient Frontier Chart & Interactive Controls -->
+    <div class="col-12 col-lg-7">
+        <div class="gw-card h-100">
+            <div class="gw-card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <h3 class="gw-card-title mb-0">
+                    <i class="bi bi-graph-up-arrow text-success"></i> Mean-CVaR Pareto Efficient Frontier
+                </h3>
+                <div class="btn-group btn-group-sm" role="group" id="lambdaButtonGroup">
+                    <button type="button" class="btn btn-outline-success active" data-lambda="0.0">λ = 0.00</button>
+                    <button type="button" class="btn btn-outline-success" data-lambda="0.25">λ = 0.25</button>
+                    <button type="button" class="btn btn-outline-success" data-lambda="0.50">λ = 0.50</button>
+                    <button type="button" class="btn btn-outline-success" data-lambda="0.75">λ = 0.75</button>
+                    <button type="button" class="btn btn-outline-success" data-lambda="1.0">λ = 1.00</button>
+                </div>
+            </div>
+            <div class="gw-card-body">
+                <div id="riskFrontierChart" style="height: 310px;"></div>
+                
+                <!-- Interactive Policy Decision Indicator -->
+                <div class="p-3 mt-3 bg-light rounded border">
+                    <div class="row g-2 text-center align-items-center">
+                        <div class="col-6 col-md-3">
+                            <span class="text-muted d-block small">Selected Weight (λ)</span>
+                            <strong class="text-dark fs-6" id="selectedLambdaLabel">0.00 (Risk-Neutral)</strong>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <span class="text-muted d-block small">Expected Cost E[C]</span>
+                            <strong class="text-success fs-6" id="selectedExpCost">₹52,227.39</strong>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <span class="text-muted d-block small">Tail Risk CVaR (95%)</span>
+                            <strong class="text-danger fs-6" id="selectedCvarCost">₹62,173.94</strong>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <span class="text-muted d-block small">Hedging Premium</span>
+                            <strong class="text-primary fs-6" id="selectedRiskPremium">+₹0.00</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Evaluates trade-off between baseline expected cost and tail-risk exposure (Rockafellar-Uryasev formulation).</span>
+                <span class="badge bg-white text-success border border-success">Convex Reformulation</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Strategy Comparison: Risk-Neutral vs. Risk-Averse -->
+    <div class="col-12 col-lg-5">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-book text-secondary"></i> Decision Policy Assessment
+                </h3>
+                <span class="gw-badge gw-badge-gray">Mathematical Policy</span>
+            </div>
+            <div class="gw-card-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded border-start border-3 border-primary">
+                            <h4 class="h6 fw-bold text-dark mb-1">
+                                <i class="bi bi-shield text-primary me-1"></i> Risk-Neutral Policy (λ = 0.0)
+                            </h4>
+                            <p class="small text-muted mb-0">
+                                Minimizes probability-weighted expected cost: <code>min E[Cost]</code>.
+                                Yields optimal routine operating costs (₹52,227.39), but leaves campus exposed to worst-case tail spikes (₹62,173.94) during low solar irradiance.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded border-start border-3 border-danger">
+                            <h4 class="h6 fw-bold text-dark mb-1">
+                                <i class="bi bi-shield-fill-check text-danger me-1"></i> Mean-CVaR Hedged Policy (λ = 0.25 – 0.50)
+                            </h4>
+                            <p class="small text-muted mb-0">
+                                Minimizes convex combination: <code>min (1 - λ)·E[Cost] + λ·CVaR_α[Cost]</code>.
+                                Procures firmer day-ahead reservations (2,829.0 kWh) and reserves battery charge, reducing tail risk exposure by ₹95.81 at a nominal premium of ₹39.55.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded border-start border-3 border-dark">
+                            <h4 class="h6 fw-bold text-dark mb-1">
+                                <i class="bi bi-shield-lock text-dark me-1"></i> Maximum Tail Hedging (λ = 1.0)
+                            </h4>
+                            <p class="small text-muted mb-0">
+                                Focuses exclusively on bounding worst 5% disaster scenarios. Increases forward procurement to 3,913.5 kWh, capping tail risk at ₹62,000.03.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3 p-3 bg-white border rounded small text-muted">
+                    <i class="bi bi-info-circle text-teal me-1"></i>
+                    <strong>Campus Recommendation:</strong> <code>λ = 0.25 to 0.50</code> strikes the ideal balance between low routine utility spend and regulatory peak containment.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    if (window.GridWiseCharts) {
+        await GridWiseCharts.renderRiskCostDistribution('riskCostDistributionChart');
+        await GridWiseCharts.renderRiskVarCvarComparison('riskVarCvarComparisonChart');
+        await GridWiseCharts.renderRiskFrontier('riskFrontierChart', 0.0);
+    }
+
+    // Interactive Lambda selection
+    const btnGroup = document.getElementById('lambdaButtonGroup');
+    if (btnGroup) {
+        btnGroup.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                btnGroup.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const lam = parseFloat(btn.getAttribute('data-lambda'));
+                if (window.GridWiseCharts) {
+                    await GridWiseCharts.renderRiskFrontier('riskFrontierChart', lam);
+                    const riskData = await GridWiseCharts.fetchRiskData();
+                    const frontier = riskData?.pareto_frontier || [];
+                    const pt = frontier.find(p => Math.abs(p.lambda - lam) < 0.01);
+                    if (pt) {
+                        const lbl = document.getElementById('selectedLambdaLabel');
+                        const expC = document.getElementById('selectedExpCost');
+                        const cvarC = document.getElementById('selectedCvarCost');
+                        const prem = document.getElementById('selectedRiskPremium');
+                        if (lbl) lbl.textContent = pt.lambda_label || `${lam.toFixed(2)}`;
+                        if (expC) expC.textContent = `₹${pt.expected_cost_inr.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+                        if (cvarC) cvarC.textContent = `₹${pt.cvar_95_inr.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+                        if (prem) prem.textContent = `${pt.risk_premium_inr >= 0 ? '+' : ''}₹${pt.risk_premium_inr.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+                    }
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

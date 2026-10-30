@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Authentication & Access Control{% endblock %}
+{% block topbar_title %}Security Access &bull; RBAC Login{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-12 col-md-8 col-lg-5">
+        <div class="gw-card p-4 p-md-5 shadow-sm">
+            <div class="text-center mb-4">
+                <div class="d-inline-flex p-3 rounded-circle mb-3" style="background-color: rgba(22, 163, 74, 0.1); color: #16A34A;">
+                    <i class="bi bi-shield-lock-fill fs-2"></i>
+                </div>
+                <h3 class="h4 fw-bold text-dark mb-1">GRIDWISE AI Access</h3>
+                <p class="text-muted small">Sign in to unlock operator controls and administrative actions</p>
+            </div>
+
+            {% if error %}
+            <div class="alert alert-danger py-2 small d-flex align-items-center gap-2 mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>{{ error }}</span>
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('auth.login_view') }}" id="loginForm">
+                <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
+                
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold text-dark">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
+                        <input type="text" class="form-control border-start-0" id="usernameInput" name="username" value="{{ username or '' }}" required autofocus placeholder="Enter your username">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-semibold text-dark">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-key text-muted"></i></span>
+                        <input type="password" class="form-control border-start-0" id="passwordInput" name="password" required placeholder="Enter your password">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-gw-primary w-100 py-2 fw-semibold mb-3">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Platform
+                </button>
+            </form>
+
+            <!-- Academic Demonstration Quick-Select Credentials -->
+            <div class="mt-4 pt-3 border-top">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="small fw-bold text-muted text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.05em;">Demo Credentials</span>
+                    <span class="badge bg-light text-secondary border">Academic Evaluation</span>
+                </div>
+                <div class="d-flex flex-column gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary text-start d-flex justify-content-between align-items-center py-1 px-2" onclick="fillCredentials('admin', 'GridWise@Admin2026')">
+                        <span class="small"><i class="bi bi-shield-check text-success me-1"></i> <strong>admin</strong> (Full Admin / Backups / Restore)</span>
+                        <span class="badge bg-success-subtle text-success small">Fill</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary text-start d-flex justify-content-between align-items-center py-1 px-2" onclick="fillCredentials('operator', 'Operator@2026')">
+                        <span class="small"><i class="bi bi-gear text-primary me-1"></i> <strong>operator</strong> (Optimization / Jobs)</span>
+                        <span class="badge bg-primary-subtle text-primary small">Fill</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary text-start d-flex justify-content-between align-items-center py-1 px-2" onclick="fillCredentials('viewer', 'Viewer@2026')">
+                        <span class="small"><i class="bi bi-eye text-muted me-1"></i> <strong>viewer</strong> (Read-Only Dashboards)</span>
+                        <span class="badge bg-secondary-subtle text-secondary small">Fill</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function fillCredentials(user, pass) {
+    document.getElementById('usernameInput').value = user;
+    document.getElementById('passwordInput').value = pass;
+}
+</script>
+{% endblock %}
+

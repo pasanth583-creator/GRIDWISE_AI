@@ -1,0 +1,585 @@
+{% extends "base.html" %}
+
+{% block title %}AI Decision Intelligence & Multi-Objective Optimization | GRIDWISE AI{% endblock %}
+{% block topbar_title %}AI Decision Intelligence & Multi-Objective Decision Support{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+
+    <!-- Header Banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+        <div>
+            <h1 class="h3 fw-bold text-dark mb-1">AI Decision Intelligence Studio</h1>
+            <p class="text-muted small mb-0">
+                Data-grounded optimization explainability, multi-objective trade-offs, Pareto frontier analysis, and parametric what-if simulation laboratory.
+            </p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <button id="btnRefreshExplanations" class="btn btn-outline-secondary btn-sm shadow-sm">
+                <i class="bi bi-arrow-clockwise me-1"></i> Refresh AI Explanations
+            </button>
+            <a href="#whatIfSection" class="btn btn-success btn-sm shadow-sm" style="background-color: #16A34A; border-color: #16A34A;">
+                <i class="bi bi-flask-fill me-1"></i> Launch What-If Lab
+            </a>
+        </div>
+    </div>
+
+    <!-- Core Metrics Overview Row -->
+    <div class="row g-3 mb-4">
+        <!-- Expected Daily Cost -->
+        <div class="col-6 col-md-3">
+            <div class="card border shadow-sm h-100">
+                <div class="card-body p-3">
+                    <span class="text-uppercase fw-semibold text-muted small">Optimal Daily Cost</span>
+                    <div class="h3 fw-bold text-dark my-1" id="kpiDecisionCost">
+                        ₹{{ "{:,.2f}".format(latest_opt.expected_cost_inr) if latest_opt else '48,021.86' }}
+                    </div>
+                    <div class="small text-muted">
+                        VSS: <strong class="text-success">₹{{ "{:,.2f}".format(latest_opt.vss_inr) if latest_opt else '297.29' }}</strong> savings
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 95% CVaR Tail Risk -->
+        <div class="col-6 col-md-3">
+            <div class="card border shadow-sm h-100">
+                <div class="card-body p-3">
+                    <span class="text-uppercase fw-semibold text-muted small">Tail Risk (CVaR 95%)</span>
+                    <div class="h3 fw-bold text-dark my-1" id="kpiDecisionCvar">
+                        ₹{{ "{:,.2f}".format(latest_opt.cvar_95_inr) if latest_opt else '58,046.35' }}
+                    </div>
+                    <div class="small text-muted">
+                        VaR 95%: <strong>₹{{ "{:,.2f}".format(latest_opt.var_95_inr) if latest_opt else '56,118.50' }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Battery Degradation & Cycles -->
+        <div class="col-6 col-md-3">
+            <div class="card border shadow-sm h-100">
+                <div class="card-body p-3">
+                    <span class="text-uppercase fw-semibold text-muted small">Battery Cycling (EFC)</span>
+                    <div class="h3 fw-bold text-dark my-1" id="kpiBatteryEfc">
+                        {{ lifecycle.equivalent_full_cycles if lifecycle else '0.784' }} <small class="fs-6 fw-normal text-muted">Cycles</small>
+                    </div>
+                    <div class="small text-muted">
+                        Wear Cost: <strong>₹{{ "{:,.2f}".format(lifecycle.estimated_degradation_cost_inr) if lifecycle else '274.50' }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projected Battery Lifespan -->
+        <div class="col-6 col-md-3">
+            <div class="card border shadow-sm h-100">
+                <div class="card-body p-3">
+                    <span class="text-uppercase fw-semibold text-muted small">Asset Life Expectancy</span>
+                    <div class="h3 fw-bold text-dark my-1" id="kpiBatteryLife">
+                        {{ lifecycle.projected_cycle_life_remaining_years if lifecycle else '15.0' }} <small class="fs-6 fw-normal text-muted">Years</small>
+                    </div>
+                    <div class="small text-muted">
+                        LFP 4500-Cycle Curve (Max DoD: <strong>{{ lifecycle.max_dod_pct if lifecycle else '75.0' }}%</strong>)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Optimization Decision Explanations Section -->
+    <div class="card border shadow-sm mb-4">
+        <div class="card-header bg-white py-3 px-3 border-bottom d-flex justify-content-between align-items-center">
+            <div>
+                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-chat-left-quote-fill text-primary me-2"></i>Explainable AI: Mathematical & Operational Rationale</h6>
+                <small class="text-muted">Factual data-grounded explanations extracted from LP decision variables and dual prices</small>
+            </div>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Grounded In Actual LP Output</span>
+        </div>
+        <div class="card-body p-3">
+            <div class="row g-3" id="explanationsContainer">
+                {% for exp in explanations %}
+                <div class="col-12 col-lg-6">
+                    <div class="p-3 rounded border bg-light h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-secondary-subtle text-secondary fw-semibold">{{ exp.decision_type }}</span>
+                            <small class="text-muted">{{ exp.created_at[:10] if exp.created_at else '' }}</small>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-2">{{ exp.summary_headline }}</h6>
+                        <p class="small text-muted mb-3">{{ exp.detailed_explanation }}</p>
+                        {% if exp.key_metrics %}
+                        <div class="d-flex flex-wrap gap-2 pt-2 border-top">
+                            {% for k, v in exp.key_metrics.items() %}
+                            <span class="badge bg-white text-dark border small fw-normal">
+                                <strong>{{ k.replace('_', ' ').title() }}:</strong> {{ v }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12 text-center py-4 text-muted">
+                    <i class="bi bi-lightbulb fs-2 d-block mb-2 text-warning"></i>
+                    Generating data-driven optimization explanations...
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Multi-Objective Optimization & Pareto Frontier Row -->
+    <div class="row g-4 mb-4">
+        <!-- Interactive Weights Configuration -->
+        <div class="col-12 col-xl-5">
+            <div class="card border shadow-sm h-100">
+                <div class="card-header bg-white py-3 px-3 border-bottom d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Multi-Objective Weight Configuration</h6>
+                        <small class="text-muted">Adjust trade-offs between cost, risk, solar, and battery cycling</small>
+                    </div>
+                    <span class="badge bg-light text-muted border">Sum Normalized to 1.0</span>
+                </div>
+                <div class="card-body p-3">
+                    <form id="multiObjectiveForm">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between small fw-semibold mb-1">
+                                <span>Expected Procurement Cost (w_cost)</span>
+                                <span id="lblWeightCost">0.40</span>
+                            </div>
+                            <input type="range" class="form-range" id="rngWeightCost" min="0" max="1" step="0.05" value="0.40">
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between small fw-semibold mb-1">
+                                <span>CVaR 95% Tail Risk (w_cvar)</span>
+                                <span id="lblWeightCvar">0.20</span>
+                            </div>
+                            <input type="range" class="form-range" id="rngWeightCvar" min="0" max="1" step="0.05" value="0.20">
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between small fw-semibold mb-1">
+                                <span>Solar Self-Consumption (w_solar)</span>
+                                <span id="lblWeightSolar">0.15</span>
+                            </div>
+                            <input type="range" class="form-range" id="rngWeightSolar" min="0" max="1" step="0.05" value="0.15">
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between small fw-semibold mb-1">
+                                <span>Grid Independence (w_grid)</span>
+                                <span id="lblWeightGrid">0.15</span>
+                            </div>
+                            <input type="range" class="form-range" id="rngWeightGrid" min="0" max="1" step="0.05" value="0.15">
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between small fw-semibold mb-1">
+                                <span>Battery Degradation Conservation (w_batt)</span>
+                                <span id="lblWeightBatt">0.10</span>
+                            </div>
+                            <input type="range" class="form-range" id="rngWeightBatt" min="0" max="1" step="0.05" value="0.10">
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="button" id="btnResetCostOnly" class="btn btn-outline-secondary btn-sm flex-fill">
+                                Cost-Only Mode (Phase 4)
+                            </button>
+                            <button type="submit" id="btnSolveMultiObjective" class="btn btn-success btn-sm flex-fill" style="background-color: #16A34A; border-color: #16A34A;">
+                                <i class="bi bi-play-circle-fill me-1"></i> Solve Weighted LP
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pareto Frontier Visualization -->
+        <div class="col-12 col-xl-7">
+            <div class="card border shadow-sm h-100">
+                <div class="card-header bg-white py-3 px-3 border-bottom d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Non-Dominated Pareto Frontier (Cost vs CVaR Risk)</h6>
+                        <small class="text-muted">Rigorous Pareto dominance verification across sampled trade-offs</small>
+                    </div>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">Non-Dominated Sets</span>
+                </div>
+                <div class="card-body p-2">
+                    <div id="chartParetoFrontier" style="height: 350px; width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actionable Recommendation Engine Cards -->
+    <div class="card border shadow-sm mb-4">
+        <div class="card-header bg-white py-3 px-3 border-bottom d-flex justify-content-between align-items-center">
+            <div>
+                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-award-fill text-warning me-2"></i>Prioritized Operational Recommendations</h6>
+                <small class="text-muted">Actionable dispatch, procurement, and battery mitigation directives</small>
+            </div>
+            <span class="badge bg-light text-muted border">Evidence-Linked</span>
+        </div>
+        <div class="card-body p-3">
+            <div class="row g-3" id="recommendationsContainer">
+                {% for rec in recommendations %}
+                <div class="col-12 col-md-6">
+                    <div class="card border h-100 p-3 shadow-none bg-white">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge {% if rec.priority == 'HIGH' %}bg-danger{% elif rec.priority == 'MEDIUM' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">
+                                {{ rec.priority }} PRIORITY
+                            </span>
+                            <span class="badge bg-light text-secondary border small">{{ rec.category }}</span>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1">{{ rec.title }}</h6>
+                        <p class="small text-muted mb-2">{{ rec.explanation }}</p>
+                        
+                        <div class="small p-2 rounded bg-success-subtle text-success mb-2">
+                            <i class="bi bi-graph-up-arrow me-1"></i><strong>Expected Benefit:</strong> {{ rec.expected_benefit }}
+                        </div>
+                        
+                        {% if rec.possible_drawback %}
+                        <div class="small p-2 rounded bg-light text-muted mb-2">
+                            <i class="bi bi-exclamation-circle me-1"></i><strong>Trade-Off:</strong> {{ rec.possible_drawback }}
+                        </div>
+                        {% endif %}
+
+                        <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center small text-muted">
+                            <span>Evidence: <em>{{ rec.evidence_level }}</em></span>
+                            <code>{{ rec.run_uuid }}</code>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12 text-center py-4 text-muted">
+                    No recommendations logged yet. Running optimization will automatically populate this section.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- What-If Simulation Laboratory Section -->
+    <div class="card border shadow-sm mb-4" id="whatIfSection">
+        <div class="card-header bg-white py-3 px-3 border-bottom d-flex justify-content-between align-items-center">
+            <div>
+                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-flask text-success me-2"></i>What-If Simulation Laboratory (Isolated Sandbox)</h6>
+                <small class="text-muted">Test asset expansion, severe heatwaves, and tariff spikes without altering production settings</small>
+            </div>
+            <span class="badge bg-success-subtle text-success border border-success-subtle">Isolated Environment</span>
+        </div>
+        <div class="card-body p-3">
+            <form id="whatIfForm" class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Experiment Name</label>
+                    <input type="text" class="form-control form-control-sm" id="wiExpName" value="Solar 1200kWp Expansion Scenario" required>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-semibold text-secondary mb-1">PV Capacity</label>
+                    <div class="input-group input-group-sm">
+                        <input type="number" class="form-control" id="wiSolarCap" value="1200" min="200" max="2500" step="100">
+                        <span class="input-group-text">kWp</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Battery Storage</label>
+                    <div class="input-group input-group-sm">
+                        <input type="number" class="form-control" id="wiBattCap" value="1500" min="200" max="3000" step="100">
+                        <span class="input-group-text">kWh</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Demand Scale</label>
+                    <select class="form-select form-select-sm" id="wiDemandScale">
+                        <option value="0.85">-15% (Recess)</option>
+                        <option value="1.0" selected>1.0x (Normal)</option>
+                        <option value="1.15">+15% (Summer Exam)</option>
+                        <option value="1.30">+30% (Severe Heatwave)</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Tariff Scale</label>
+                    <select class="form-select form-select-sm" id="wiPriceScale">
+                        <option value="0.90">-10%</option>
+                        <option value="1.0" selected>1.0x (Current)</option>
+                        <option value="1.25">+25% Utility Hike</option>
+                        <option value="1.50">+50% Crisis Shock</option>
+                    </select>
+                </div>
+
+                <div class="col-12 d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
+                    <button type="submit" id="btnExecuteWhatIf" class="btn btn-success btn-sm px-4" style="background-color: #16A34A; border-color: #16A34A;">
+                        <i class="bi bi-cpu-fill me-1"></i> Execute What-If Experiment
+                    </button>
+                </div>
+            </form>
+
+            <!-- Experiment Outcome Comparison View -->
+            <div id="whatIfResultCard" class="mt-4 p-3 rounded border bg-light d-none">
+                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Simulation Outcome vs Production Baseline</h6>
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <div class="small text-muted">Experimental Cost:</div>
+                        <h5 class="fw-bold text-dark mb-0" id="wiResCost">₹0.00</h5>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="small text-muted">Cost Delta vs Baseline:</div>
+                        <h5 class="fw-bold mb-0" id="wiResCostDelta">₹0.00</h5>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="small text-muted">CVaR 95% Tail Risk:</div>
+                        <h5 class="fw-bold text-dark mb-0" id="wiResCvar">₹0.00</h5>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="small text-muted">VSS Economic Value:</div>
+                        <h5 class="fw-bold text-success mb-0" id="wiResVss">₹0.00</h5>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historical What-If Experiments Table -->
+            <div class="table-responsive mt-4">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light text-muted text-uppercase" style="font-size: 0.75rem;">
+                        <tr>
+                            <th class="ps-3">Experiment UUID</th>
+                            <th>Experiment Name</th>
+                            <th>PV / Battery</th>
+                            <th>Expected Cost</th>
+                            <th>Cost Shift vs Baseline</th>
+                            <th>CVaR (95%)</th>
+                            <th>VSS Value</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblWhatIfHistory">
+                        {% for exp in what_if_history %}
+                        <tr>
+                            <td class="ps-3"><code>{{ exp.experiment_uuid }}</code></td>
+                            <td><strong>{{ exp.experiment_name }}</strong></td>
+                            <td>{{ exp.modified_params.solar_capacity_kw }} kWp / {{ exp.modified_params.battery_capacity_kwh }} kWh</td>
+                            <td>₹{{ "{:,.2f}".format(exp.expected_cost_inr) }}</td>
+                            <td>
+                                {% if exp.cost_delta_inr < 0 %}
+                                    <span class="text-success fw-semibold">-₹{{ "{:,.2f}".format(exp.cost_delta_inr|abs) }}</span>
+                                {% else %}
+                                    <span class="text-danger fw-semibold">+₹{{ "{:,.2f}".format(exp.cost_delta_inr) }}</span>
+                                {% endif %}
+                            </td>
+                            <td>₹{{ "{:,.2f}".format(exp.cvar_95_inr) }}</td>
+                            <td><span class="text-success">₹{{ "{:,.2f}".format(exp.vss_inr) if exp.vss_inr else '0.00' }}</span></td>
+                            <td class="text-muted">{{ exp.created_at[:19].replace('T', ' ') if exp.created_at else '' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center py-3 text-muted">
+                                No what-if experiments recorded yet. Use the form above to launch your first parametric simulation.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Initial Pareto chart render
+    renderParetoFrontier();
+
+    // Setup Weight Sliders dynamic feedback
+    const sliders = [
+        { id: "rngWeightCost", lbl: "lblWeightCost" },
+        { id: "rngWeightCvar", lbl: "lblWeightCvar" },
+        { id: "rngWeightSolar", lbl: "lblWeightSolar" },
+        { id: "rngWeightGrid", lbl: "lblWeightGrid" },
+        { id: "rngWeightBatt", lbl: "lblWeightBatt" }
+    ];
+
+    sliders.forEach(s => {
+        const el = document.getElementById(s.id);
+        const lbl = document.getElementById(s.lbl);
+        if (el && lbl) {
+            el.addEventListener("input", () => {
+                lbl.innerText = parseFloat(el.value).toFixed(2);
+            });
+        }
+    });
+
+    // Cost-only mode button
+    const btnCostOnly = document.getElementById("btnResetCostOnly");
+    if (btnCostOnly) {
+        btnCostOnly.addEventListener("click", () => {
+            document.getElementById("rngWeightCost").value = 1.0;
+            document.getElementById("lblWeightCost").innerText = "1.00";
+            ["rngWeightCvar", "rngWeightSolar", "rngWeightGrid", "rngWeightBatt"].forEach(id => {
+                document.getElementById(id).value = 0.0;
+            });
+            ["lblWeightCvar", "lblWeightSolar", "lblWeightGrid", "lblWeightBatt"].forEach(id => {
+                document.getElementById(id).innerText = "0.00";
+            });
+        });
+    }
+
+    // Multi-objective form submit
+    const formMO = document.getElementById("multiObjectiveForm");
+    if (formMO) {
+        formMO.addEventListener("submit", function(e) {
+            e.preventDefault();
+            const btn = document.getElementById("btnSolveMultiObjective");
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Solving Multi-Objective LP...';
+
+            const weights = {
+                cost: parseFloat(document.getElementById("rngWeightCost").value),
+                cvar: parseFloat(document.getElementById("rngWeightCvar").value),
+                solar: parseFloat(document.getElementById("rngWeightSolar").value),
+                grid: parseFloat(document.getElementById("rngWeightGrid").value),
+                battery: parseFloat(document.getElementById("rngWeightBatt").value)
+            };
+
+            fetch("/api/decision/multi-objective", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({weights: weights, num_scenarios: 50})
+            })
+            .then(r => r.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-play-circle-fill me-1"></i> Solve Weighted LP';
+                if (data.success) {
+                    alert("Multi-objective optimization solved! Expected Cost: ₹" + data.data.objectives.expected_cost_inr.toFixed(2) + ", CVaR: ₹" + data.data.objectives.cvar_95_inr.toFixed(2));
+                    renderParetoFrontier();
+                } else {
+                    alert("Error: " + (data.error || "Could not solve multi-objective LP"));
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-play-circle-fill me-1"></i> Solve Weighted LP';
+                alert("Network error: " + err);
+            });
+        });
+    }
+
+    // What-If Form submit
+    const formWI = document.getElementById("whatIfForm");
+    if (formWI) {
+        formWI.addEventListener("submit", function(e) {
+            e.preventDefault();
+            const btn = document.getElementById("btnExecuteWhatIf");
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Simulating...';
+
+            const payload = {
+                experiment_name: document.getElementById("wiExpName").value,
+                solar_capacity_kw: parseFloat(document.getElementById("wiSolarCap").value),
+                battery_capacity_kwh: parseFloat(document.getElementById("wiBattCap").value),
+                demand_scale: parseFloat(document.getElementById("wiDemandScale").value),
+                price_scale: parseFloat(document.getElementById("wiPriceScale").value),
+                num_scenarios: 25
+            };
+
+            fetch("/api/what-if/run", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload)
+            })
+            .then(r => r.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-cpu-fill me-1"></i> Execute What-If Experiment';
+                if (data.success) {
+                    displayWhatIfResult(data.data.results);
+                } else {
+                    alert("Simulation error: " + (data.error || "Could not run experiment"));
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-cpu-fill me-1"></i> Execute What-If Experiment';
+                alert("Error: " + err);
+            });
+        });
+    }
+
+    // Refresh explanations
+    const btnExp = document.getElementById("btnRefreshExplanations");
+    if (btnExp) {
+        btnExp.addEventListener("click", () => {
+            location.reload();
+        });
+    }
+});
+
+function renderParetoFrontier() {
+    fetch("/api/decision/pareto")
+        .then(r => r.json())
+        .then(res => {
+            if (!res.success || !res.data || !res.data.solutions) return;
+
+            const sols = res.data.solutions;
+            const xCosts = sols.map(s => s.expected_cost_inr);
+            const yCvars = sols.map(s => s.cvar_95_inr);
+            const textLabels = sols.map(s => `${s.name}<br>Cost: ₹${s.expected_cost_inr.toFixed(2)}<br>CVaR: ₹${s.cvar_95_inr.toFixed(2)}<br>Solar Util: ${s.solar_utilization_pct.toFixed(1)}%`);
+            const colors = sols.map(s => s.is_pareto_optimal ? '#16A34A' : '#94A3B8');
+
+            const trace = {
+                x: xCosts,
+                y: yCvars,
+                mode: 'markers+text',
+                type: 'scatter',
+                text: sols.map(s => s.name.split(' ')[0]),
+                textposition: 'top center',
+                hovertext: textLabels,
+                hoverinfo: 'text',
+                marker: {
+                    size: 12,
+                    color: colors,
+                    line: { color: '#0F172A', width: 1.5 }
+                },
+                name: 'Pareto Solutions'
+            };
+
+            const layout = {
+                margin: { t: 20, r: 20, l: 55, b: 45 },
+                paper_bgcolor: '#FFFFFF',
+                plot_bgcolor: '#FFFFFF',
+                xaxis: { title: 'Expected Daily Cost (INR)', gridcolor: '#F1F5F9' },
+                yaxis: { title: '95% CVaR Tail Risk (INR)', gridcolor: '#F1F5F9' },
+                hovermode: 'closest'
+            };
+
+            Plotly.newPlot('chartParetoFrontier', [trace], layout, {responsive: true, displayModeBar: false});
+        });
+}
+
+function displayWhatIfResult(res) {
+    const card = document.getElementById("whatIfResultCard");
+    card.classList.remove("d-none");
+
+    const fInr = (v) => "₹" + Number(v).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+    document.getElementById("wiResCost").innerText = fInr(res.expected_cost_inr);
+    
+    const deltaEl = document.getElementById("wiResCostDelta");
+    if (res.cost_delta_inr < 0) {
+        deltaEl.innerText = `-${fInr(Math.abs(res.cost_delta_inr))} (${res.pct_cost_change}%)`;
+        deltaEl.className = "fw-bold text-success mb-0";
+    } else {
+        deltaEl.innerText = `+${fInr(res.cost_delta_inr)} (+${res.pct_cost_change}%)`;
+        deltaEl.className = "fw-bold text-danger mb-0";
+    }
+
+    document.getElementById("wiResCvar").innerText = fInr(res.cvar_95_inr);
+    document.getElementById("wiResVss").innerText = fInr(res.vss_inr);
+}
+</script>
+{% endblock %}
+

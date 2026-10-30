@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Scenario Analysis{% endblock %}
+{% block topbar_title %}Scenario Analysis{% endblock %}
+
+{% block content %}
+<!-- Page Header Banner -->
+<div class="gw-page-banner">
+    <div>
+        <h1 class="gw-page-header-title">
+            <i class="bi bi-diagram-3 text-amber" style="color: var(--gw-amber);"></i> Scenario Analysis
+        </h1>
+        <p class="gw-page-header-desc">
+            500 reproducible stochastic scenarios modeling joint solar irradiance intermittency and campus demand uncertainty.
+        </p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <span class="gw-badge gw-badge-amber">500 Scenarios Generated (N = 500)</span>
+        <button class="btn btn-sm btn-gw-secondary" onclick="window.location.reload();">
+            <i class="bi bi-shuffle"></i> Resample Tree
+        </button>
+    </div>
+</div>
+
+<!-- Dataset Notice Banner -->
+<div class="alert alert-info py-2 px-3 d-flex align-items-center justify-content-between gap-2 mb-4 border shadow-sm" role="alert" style="background-color: #F0FDF4; border-color: #BBF7D0 !important; color: #166534;">
+    <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-shield-check text-success fs-5"></i>
+        <span><strong>STOCHASTIC SCENARIO ENGINE:</strong> 500 Joint 24-hr realizations (12,000 data points) with AR(1) temporal correlation. <span class="badge bg-white text-success border border-success ms-1">SYNTHETIC SIMULATION DATA – NOT LIVE METER DATA</span></span>
+    </div>
+    <span class="small text-muted d-none d-md-inline">&Sigma;&pi;<sub>&omega;</sub> = 1.000000 | Sunny 35%, P.Cloudy 30%, Cloudy 20%, Rainy 15%</span>
+</div>
+
+<!-- 4 Weather Condition Scenario Cards Row -->
+<div class="row g-3 mb-4">
+    <!-- 1. Sunny Day -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="gw-card h-100 p-3 border-top border-3 border-warning">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <strong class="text-dark">Sunny (Clear Sky)</strong>
+                <span class="gw-badge gw-badge-amber">35% Prob. (175 Scenarios)</span>
+            </div>
+            <div class="small text-muted mb-1">
+                <i class="bi bi-brightness-high text-warning me-1"></i> Irradiance Mult.: <strong>1.00x &ndash; 1.08x</strong>
+            </div>
+            <div class="small text-muted mb-1">
+                <i class="bi bi-cloud text-muted me-1"></i> Cloud Cover: <strong>0% &ndash; 15%</strong>
+            </div>
+            <div class="mt-2 pt-2 border-top">
+                <span class="text-muted small d-block">Avg 24h Solar Yield:</span>
+                <strong class="text-amber fs-6" style="color: var(--gw-amber);">4,420 kWh</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Partly Cloudy -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="gw-card h-100 p-3 border-top border-3 border-teal" style="border-top-color: var(--gw-secondary-teal) !important;">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <strong class="text-dark">Partly Cloudy</strong>
+                <span class="gw-badge gw-badge-teal">30% Prob. (150 Scenarios)</span>
+            </div>
+            <div class="small text-muted mb-1">
+                <i class="bi bi-cloud-sun text-secondary me-1"></i> Irradiance Mult.: <strong>0.75x &ndash; 0.90x</strong>
+            </div>
+            <div class="small text-muted mb-1">
+                <i class="bi bi-cloud text-muted me-1"></i> Cloud Cover: <strong>25% &ndash; 55%</strong>
+            </div>
+            <div class="mt-2 pt-2 border-top">
+                <span class="text-muted small d-block">Avg 24h Solar Yield:</span>
+                <strong class="text-teal fs-6" style="color: var(--gw-secondary-teal);">3,380 kWh</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Cloudy -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="gw-card h-100 p-3 border-top border-3 border-primary">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <strong class="text-dark">Cloudy (Overcast)</strong>
+                <span class="gw-badge gw-badge-blue">20% Prob. (100 Scenarios)</span>
+            </div>
+            <div class="small text-muted mb-1">
+                <i class="bi bi-clouds text-primary me-1"></i> Irradiance Mult.: <strong>0.40x &ndash; 0.60x</strong>
+            </div>
+            <div class="small text-muted mb-1">
+                <i class="bi bi-cloud text-muted me-1"></i> Cloud Cover: <strong>65% &ndash; 85%</strong>
+            </div>
+            <div class="mt-2 pt-2 border-top">
+                <span class="text-muted small d-block">Avg 24h Solar Yield:</span>
+                <strong class="text-primary fs-6">1,890 kWh</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Rainy -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="gw-card h-100 p-3 border-top border-3 border-danger">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <strong class="text-dark">Rainy (Storm / Heavy)</strong>
+                <span class="gw-badge gw-badge-gray text-danger">15% Prob. (75 Scenarios)</span>
+            </div>
+            <div class="small text-muted mb-1">
+                <i class="bi bi-cloud-rain-heavy text-danger me-1"></i> Irradiance Mult.: <strong>0.12x &ndash; 0.28x</strong>
+            </div>
+            <div class="small text-muted mb-1">
+                <i class="bi bi-cloud text-muted me-1"></i> Cloud Cover: <strong>90% &ndash; 100%</strong>
+            </div>
+            <div class="mt-2 pt-2 border-top">
+                <span class="text-muted small d-block">Avg 24h Solar Yield:</span>
+                <strong class="text-danger fs-6">710 kWh</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 4 Charts Grid (2x2) -->
+<div class="row g-4 mb-4">
+    <!-- Chart 1: Scenario Probabilities -->
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-pie-chart text-teal"></i> Scenario Probability Distribution (π_ω)
+                </h3>
+                <span class="gw-badge gw-badge-teal">LHS Normalized</span>
+            </div>
+            <div class="gw-card-body">
+                <div id="scenarioProbabilitiesChart" style="height: 290px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Probability weights assigned to discrete weather-load realization scenarios.</span>
+                <span class="badge bg-light text-muted border">Sample Profile</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 2: Solar Generation Comparison -->
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-brightness-high text-amber" style="color: var(--gw-amber);"></i> Solar Generation Across Scenarios (kW)
+                </h3>
+                <span class="gw-badge gw-badge-amber">Irradiance Impact</span>
+            </div>
+            <div class="gw-card-body">
+                <div id="scenarioSolarComparisonChart" style="height: 290px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Comparison of 24-hr PV yield across clear, cloudy, and overcast realizations.</span>
+                <span class="badge bg-light text-muted border">Sample Profile</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 3: Scenario Demand Comparison -->
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-building text-primary"></i> Campus Demand Variations Across Scenarios (kW)
+                </h3>
+                <span class="gw-badge gw-badge-blue">Load Volatility</span>
+            </div>
+            <div class="gw-card-body">
+                <div id="scenarioDemandComparisonChart" style="height: 290px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Heat wave chiller surge vs normal academic semester vs holiday recess load.</span>
+                <span class="badge bg-light text-muted border">Sample Profile</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 4: Scenario Cost Comparison -->
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-cash-stack text-success"></i> Expected Procurement Cost per Scenario (INR)
+                </h3>
+                <span class="gw-badge gw-badge-green">Recourse Expenditure</span>
+            </div>
+            <div class="gw-card-body">
+                <div id="scenarioCostComparisonChart" style="height: 290px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Total second-stage procurement expense (INR) under each realization.</span>
+                <span class="badge bg-light text-muted border">Synthetic Scenarios</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.GridWiseCharts) {
+        GridWiseCharts.renderScenarioProbabilities('scenarioProbabilitiesChart');
+        GridWiseCharts.renderScenarioSolarComparison('scenarioSolarComparisonChart');
+        GridWiseCharts.renderScenarioDemandComparison('scenarioDemandComparisonChart');
+        GridWiseCharts.renderScenarioCostComparison('scenarioCostComparisonChart');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Battery Management{% endblock %}
+{% block topbar_title %}Battery Management{% endblock %}
+
+{% block content %}
+<!-- Page Header Banner -->
+<div class="gw-page-banner">
+    <div>
+        <h1 class="gw-page-header-title">
+            <i class="bi bi-battery-charging text-purple" style="color: var(--gw-purple);"></i> Battery Energy Storage System (BESS)
+        </h1>
+        <p class="gw-page-header-desc">
+            Lithium-ion storage operating envelope, degradation minimization, and dispatch cycles.
+        </p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <span class="gw-badge gw-badge-purple">LiFePO4 Chemistry</span>
+        <button class="btn btn-sm btn-gw-secondary" onclick="window.location.reload();">
+            <i class="bi bi-arrow-clockwise"></i> BMS Sync
+        </button>
+    </div>
+</div>
+
+<!-- 6 Battery Display Metrics Cards -->
+<div class="row g-3 mb-4">
+    <!-- 1. Total Battery Capacity -->
+    <div class="col-12 col-sm-6 col-xl-2">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Total Capacity</span>
+                <div class="gw-kpi-icon purple">
+                    <i class="bi bi-battery-full"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value">1,000</span>
+                    <span class="gw-kpi-unit">kWh</span>
+                </div>
+                <p class="gw-kpi-desc">Nominal rating</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Current State of Charge -->
+    <div class="col-12 col-sm-6 col-xl-2">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Current SoC</span>
+                <div class="gw-kpi-icon green">
+                    <i class="bi bi-percent"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value">68%</span>
+                </div>
+                <p class="gw-kpi-desc">Window: 15% &ndash; 95%</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Charging Power Limit -->
+    <div class="col-12 col-sm-6 col-xl-2">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Charging Limit</span>
+                <div class="gw-kpi-icon teal">
+                    <i class="bi bi-box-arrow-in-down"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value">400</span>
+                    <span class="gw-kpi-unit">kW</span>
+                </div>
+                <p class="gw-kpi-desc">0.33 C-Rate limit</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Discharging Power Limit -->
+    <div class="col-12 col-sm-6 col-xl-2">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Discharge Limit</span>
+                <div class="gw-kpi-icon amber">
+                    <i class="bi bi-box-arrow-up"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value">400</span>
+                    <span class="gw-kpi-unit">kW</span>
+                </div>
+                <p class="gw-kpi-desc">Bi-directional inverter</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Round-Trip Efficiency -->
+    <div class="col-12 col-sm-6 col-xl-2">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Efficiency</span>
+                <div class="gw-kpi-icon blue">
+                    <i class="bi bi-arrow-repeat"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value">84.6%</span>
+                </div>
+                <p class="gw-kpi-desc">92% ch &times; 92% dis</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Available Stored Energy -->
+    <div class="col-12 col-sm-6 col-xl-2">
+        <div class="gw-card gw-kpi-card">
+            <div class="gw-kpi-header">
+                <span class="gw-kpi-title">Stored Energy</span>
+                <div class="gw-kpi-icon purple">
+                    <i class="bi bi-lightning-charge"></i>
+                </div>
+            </div>
+            <div>
+                <div class="gw-kpi-value-wrap">
+                    <span class="gw-kpi-value">500</span>
+                    <span class="gw-kpi-unit">kWh</span>
+                </div>
+                <p class="gw-kpi-desc">Initial baseline (50% SoC)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3 Charts Grid -->
+<div class="row g-4 mb-4">
+    <!-- Chart 1: Battery State of Charge (SoC) Profile -->
+    <div class="col-12 col-lg-7">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-graph-up text-purple" style="color: var(--gw-purple);"></i> 24-Hour Battery State-of-Charge (SoC) Profile
+                </h3>
+                <span class="gw-badge gw-badge-purple">Safe Bounds Enforced</span>
+            </div>
+            <div class="gw-card-body">
+                <div id="batterySocProfileChart" style="height: 300px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>SoC progression bounded strictly between 15% minimum safety buffer and 95% maximum ceiling.</span>
+                <span class="badge bg-light text-muted border">Sample Profile</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 2: Charging and Discharging Schedule -->
+    <div class="col-12 col-lg-5">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-bar-chart-steps text-teal"></i> Charge &amp; Discharge Schedule
+                </h3>
+                <span class="gw-badge gw-badge-teal">±400 kW Bounds</span>
+            </div>
+            <div class="gw-card-body">
+                <div id="batteryChargeDischargeChart" style="height: 300px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Green: Off-peak grid/solar charging &bull; Purple: Peak shaving discharge.</span>
+                <span class="badge bg-light text-muted border">Sample Profile</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Chart 3: Battery Utilization & Equivalent Cycles -->
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-arrow-repeat text-primary"></i> Daily Battery Cycling &amp; Degradation Envelope
+                </h3>
+                <span class="gw-badge gw-badge-blue">Cycle Health</span>
+            </div>
+            <div class="gw-card-body">
+                <div id="batteryUtilizationChart" style="height: 280px;"></div>
+            </div>
+            <div class="gw-card-footer d-flex justify-content-between align-items-center">
+                <span>Equivalent full cycles per day (average 1.08 cycles maintains 10-year asset life).</span>
+                <span class="badge bg-light text-muted border">Sample Profile</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Professional Battery Technical Schematic -->
+    <div class="col-12 col-lg-6">
+        <div class="gw-card h-100">
+            <div class="gw-card-header">
+                <h3 class="gw-card-title">
+                    <i class="bi bi-hdd-rack text-secondary"></i> BESS Substation Technical Architecture
+                </h3>
+                <span class="gw-badge gw-badge-green">Containerized Skid</span>
+            </div>
+            <div class="gw-card-body d-flex flex-column justify-content-between">
+                <div class="p-3 bg-light rounded mb-3">
+                    <div class="row g-2 text-center">
+                        <div class="col-4">
+                            <div class="p-2 bg-white rounded border">
+                                <i class="bi bi-battery-charging fs-4 text-purple d-block mb-1" style="color: var(--gw-purple);"></i>
+                                <strong class="small text-dark">LiFePO4 Cells</strong>
+                                <span class="d-block text-muted" style="font-size: 0.72rem;">1,200 kWh Rack</span>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 bg-white rounded border">
+                                <i class="bi bi-cpu fs-4 text-teal d-block mb-1" style="color: var(--gw-secondary-teal);"></i>
+                                <strong class="small text-dark">Central BMS</strong>
+                                <span class="d-block text-muted" style="font-size: 0.72rem;">Cell Level Monitoring</span>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 bg-white rounded border">
+                                <i class="bi bi-broadcast fs-4 text-primary d-block mb-1"></i>
+                                <strong class="small text-dark">400 kW Inverter</strong>
+                                <span class="d-block text-muted" style="font-size: 0.72rem;">415V AC 3-Phase</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <tbody>
+                            <tr>
+                                <td class="text-muted">Nominal Cell Voltage / String:</td>
+                                <td class="text-end"><strong>3.2V / 240S (768V DC bus)</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Thermal Conditioning (HVAC):</td>
+                                <td class="text-end"><strong>Active Liquid Cooled (23.5°C)</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">State of Health (SoH):</td>
+                                <td class="text-end"><strong class="text-success">98.4% (Warranty intact)</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Degradation Cost Model:</td>
+                                <td class="text-end"><strong>₹0.20 / kWh cycled</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.GridWiseCharts) {
+        GridWiseCharts.renderBatterySocProfile('batterySocProfileChart');
+        GridWiseCharts.renderBatteryChargeDischarge('batteryChargeDischargeChart');
+        GridWiseCharts.renderBatteryUtilization('batteryUtilizationChart');
+    }
+});
+</script>
+{% endblock %}

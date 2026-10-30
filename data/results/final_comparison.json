@@ -1,0 +1,27 @@
+{
+  "project_title": "Risk-Averse Stochastic Day-Ahead Energy Procurement and Battery Dispatch for an Institutional Microgrid",
+  "application": "GRIDWISE AI",
+  "status": "VERIFIED_ACADEMIC_BENCHMARK",
+  "verification_timestamp_utc": "2026-10-30T10:23:52Z",
+  "benchmark_metrics": {
+    "recourse_problem_stochastic_cost_rp_inr": 69540.75,
+    "expected_value_of_expected_solution_eev_inr": 70681.64,
+    "wait_and_see_benchmark_ws_inr": 68070.84,
+    "value_of_stochastic_solution_vss_inr": 1140.89,
+    "vss_percentage_savings": 1.61,
+    "expected_value_of_perfect_information_evpi_inr": 1469.91,
+    "evpi_percentage_of_rp": 2.11,
+    "annualized_projected_savings_inr": 416424.85
+  },
+  "theorem_verification": {
+    "relationship": "WS <= RP <= EEV",
+    "is_non_negative_vss": true,
+    "is_non_negative_evpi": true,
+    "is_mathematically_consistent": true
+  },
+  "tail_risk_metrics": {
+    "var_95_inr": 101273.67,
+    "cvar_95_inr": 104400.74
+  },
+  "notice": "SYNTHETIC SIMULATION DATA \u2013 NOT LIVE METER DATA"
+}
